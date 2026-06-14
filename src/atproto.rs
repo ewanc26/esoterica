@@ -15,6 +15,29 @@ impl AtprotoPublisher {
         Self { agent }
     }
 
+    pub async fn list_publications(&self) -> Result<Vec<(String, String)>> {
+        let session = self.agent.get_session().await.context("Not logged in")?;
+        
+        let output = self.agent.api.com.atproto.repo.list_records(
+            atrium_api::com::atproto::repo::list_records::ParametersData {
+                collection: "site.standard.publication".parse().map_err(|e| anyhow!("{}", e))?,
+                repo: AtIdentifier::Did(session.did.clone()),
+                cursor: None,
+                limit: Some(50.try_into().map_err(|e| anyhow!("{}", e))?),
+                reverse: None,
+            }.into()
+        ).await?;
+
+        let mut pubs = Vec::new();
+        for record in output.data.records {
+            let val = serde_json::to_value(&record.value)?;
+            if let Some(name) = val.get("name").and_then(|n| n.as_str()) {
+                pubs.push((name.to_string(), record.uri.clone()));
+            }
+        }
+        Ok(pubs)
+    }
+
     pub async fn publish_publication(&self, name: &str, url: &str) -> Result<String> {
         let record = json!({
             "$type": "site.standard.publication",
@@ -30,8 +53,7 @@ impl AtprotoPublisher {
             atrium_api::com::atproto::repo::put_record::InputData {
                 collection: "site.standard.publication".parse().map_err(|e| anyhow!("{}", e))?,
                 repo: AtIdentifier::Did(session.did.clone()),
-                // Note: Real TIDs should be generated dynamically
-                rkey: RecordKey::from_str("3lxyz123abcde").map_err(|e| anyhow!("{}", e))?, 
+                rkey: RecordKey::from_str(&format!("pub-{}", name.to_lowercase().replace(" ", "-"))).map_err(|e| anyhow!("{}", e))?,
                 record: serde_json::from_value::<Unknown>(record)?,
                 swap_record: None,
                 validate: None,
@@ -66,8 +88,7 @@ impl AtprotoPublisher {
             atrium_api::com::atproto::repo::put_record::InputData {
                 collection: "site.standard.document".parse().map_err(|e| anyhow!("{}", e))?,
                 repo: AtIdentifier::Did(session.did.clone()),
-                // Note: Real TIDs should be generated dynamically
-                rkey: RecordKey::from_str("3lxyz456fghij").map_err(|e| anyhow!("{}", e))?,
+                rkey: RecordKey::from_str(&format!("dict-{}", title).replace(" ", "-")).map_err(|e| anyhow!("{}", e))?,
                 record: serde_json::from_value::<Unknown>(record)?,
                 swap_record: None,
                 validate: None,

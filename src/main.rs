@@ -36,9 +36,6 @@ struct Args {
 
     #[arg(long)]
     publish_title: Option<String>,
-    
-    #[arg(long)]
-    publication_uri: Option<String>,
 }
 
 #[tokio::main]
@@ -87,7 +84,17 @@ async fn main() -> Result<()> {
         agent.login(handle, pass).await?;
         
         let publisher = atproto::AtprotoPublisher::new(agent);
-        let publication_uri = args.publication_uri.context("Need --publication-uri to publish dictionary")?;
+        
+        // Find or create "Conlang Dictionary" publication
+        let pubs = publisher.list_publications().await?;
+        let publication_uri = if let Some(p) = pubs.iter().find(|p| p.0 == "Conlang Dictionary") {
+            p.1.clone()
+        } else {
+            println!("'Conlang Dictionary' publication not found. Creating...");
+            let name = "Conlang Dictionary";
+            let url = "https://example.com/conlang-dict"; // Placeholder
+            publisher.publish_publication(name, url).await?
+        };
         
         let uri = publisher.publish_dictionary(&lexicon, &title, &publication_uri).await?;
         println!("Published dictionary document to ATProto: {}", uri);

@@ -1,0 +1,11 @@
+[svo]
+word_order = "SVO"
+cases = ["nominative", "accusative"]
+
+[vso]
+word_order = "VSO"
+cases = ["nominative", "ergative"]
+
+[sov]
+word_order = "SOV"
+cases = ["nominative", "dative"]

@@ -1,0 +1,18 @@
+[agglutinative]
+rules = [
+    { Suffix = "-en" },
+    { Suffix = "-is" }
+]
+noun_classes = ["animate", "inanimate"]
+
+[fusional]
+rules = [
+    { Suffix = "-a" },
+    { Suffix = "-o" }
+]
+noun_classes = ["masculine", "feminine", "neuter"]
+
+[analytic]
+rules = [
+    { Prefix = "pre-" }
+]

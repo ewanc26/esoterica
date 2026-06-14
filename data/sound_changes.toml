@@ -1,0 +1,9 @@
+none = []
+
+lenition = [
+    { pattern = "p", replacement = "b", context = "word_final" }
+]
+
+spirantization = [
+    { pattern = "k", replacement = "h", context = "word_final" }
+]

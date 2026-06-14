@@ -1,6 +1,6 @@
 use ratatui::{
     layout::{Constraint, Direction, Layout},
-    widgets::{Block, Borders, List, ListItem, ListState},
+    widgets::{Block, Borders, List, ListItem, ListState, Scrollbar, ScrollbarOrientation, ScrollbarState},
     style::{Style, Color, Modifier},
     Frame,
 };
@@ -123,5 +123,17 @@ impl ConfigComponent {
         
         let mut state = state.clone();
         f.render_stateful_widget(list, area, &mut state);
+
+        // Add Scrollbar
+        let scrollbar = Scrollbar::default()
+            .orientation(ScrollbarOrientation::VerticalRight);
+        
+        let mut scrollbar_state = ScrollbarState::new(items.len()).position(state.selected().unwrap_or(0));
+        
+        f.render_stateful_widget(
+            scrollbar,
+            area.inner(&ratatui::layout::Margin { vertical: 1, horizontal: 0 }),
+            &mut scrollbar_state,
+        );
     }
 }

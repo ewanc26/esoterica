@@ -16,18 +16,19 @@ impl PhonologyEngine {
         let mut syllable = String::new();
         
         // Simple phonotactics parser: C(C)V(C)
-        let parts = structure.split(['(', ')']);
-        
-        for part in parts {
-            if part.is_empty() { continue; }
-            
-            if part.contains('C') {
-                if let Some(consonant) = self.phonology.consonants.choose(&mut rng) {
-                    syllable.push_str(consonant);
+        // We iterate through every character now to support CVC directly
+        for char in structure.chars() {
+            match char {
+                'C' => {
+                    if let Some(consonant) = self.phonology.consonants.choose(&mut rng) {
+                        syllable.push_str(consonant);
+                    }
                 }
-            } else if part.contains('V') {
-                let vowel = self.phonology.vowels.choose(&mut rng).unwrap();
-                syllable.push_str(vowel);
+                'V' => {
+                    let vowel = self.phonology.vowels.choose(&mut rng).unwrap();
+                    syllable.push_str(vowel);
+                }
+                _ => {}
             }
         }
         

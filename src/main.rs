@@ -6,6 +6,8 @@ pub mod sound_change;
 pub mod syntax;
 pub mod tui;
 pub mod atproto;
+#[cfg(test)]
+mod tests;
 
 use clap::Parser;
 use std::path::PathBuf;

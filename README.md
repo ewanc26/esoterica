@@ -10,7 +10,8 @@ Esoterica is a modular, high-performance Rust framework for generating construct
     - **Morphology Engine**: Supports complex transformation rules including Suffix/Prefix/Infix insertion and Reduplication.
     - **Sound Change Engine**: Simulates diachronic phonological shifts for historical consistency.
 - **CLI Interface**: Generate complex language packages directly from the command line.
-- **ATProto Publication**: Publish generated lexicons directly to the ATProto network (Bluesky) using standard record schemas.
+- **Interactive TUI**: Real-time conlang generation and configuration.
+- **ATProto Publication**: Publish generated lexicons directly to the ATProto network using `site.standard.document` schemas.
 
 ## Quick Start
 
@@ -19,7 +20,13 @@ Esoterica is a modular, high-performance Rust framework for generating construct
    cargo build --release
    ```
 
-2. **Generate a language:**
+2. **Run in Interactive TUI Mode:**
+   ```bash
+   cargo run --release -- --interactive
+   ```
+   *Navigate with `Tab`, input configurations, and press `Enter` to generate.*
+
+3. **Generate via CLI:**
    ```bash
    cargo run --release -- --phonology uralic_finnic --morphology agglutinative --syntax svo --output my_language.json
    ```
@@ -36,7 +43,12 @@ To publish your generated lexicon to ATProto, you need to use an **App Password*
    ```
 3. Run the generator with the publication flag:
    ```bash
-   cargo run --release -- --phonology uralic_finnic --morphology agglutinative --syntax svo --publish-title "My New Language"
+   cargo run --release -- \
+     --phonology uralic_finnic \
+     --morphology agglutinative \
+     --syntax svo \
+     --publish-title "My New Language" \
+     --publication-uri "at://did:plc:.../site.standard.publication/..."
    ```
 
 ## Project Structure
@@ -51,6 +63,7 @@ esoterica/
 │   ├── sound_change.rs    # Diachronic sound change simulation
 │   ├── syntax.rs          # Word order management
 │   ├── lexicon.rs         # Dictionary generation and management
+│   ├── tui.rs             # Ratatui interactive interface
 │   └── atproto.rs         # ATProto publishing logic
 ├── Cargo.toml             # Rust dependencies
 └── README.md              # Project documentation

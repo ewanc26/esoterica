@@ -1,35 +1,48 @@
 # Esoterica Conlang Generator
 
-Esoterica is a modular, Python-based framework for generating constructed languages (conlangs). It allows users to create consistent languages by selecting from various natural language families and esoteric archetypes.
+Esoterica is a modular, high-performance Rust framework for generating constructed languages (conlangs). It allows users to create consistent languages by composing independent linguistic components: phonology, morphology, and syntax.
 
 ## Features
 
-- **Archetype-based Generation:** Select influences from natural language families (e.g., Indo-European, Turkic) or esoteric archetypes (e.g., Ithkuil-like, Toki Pona-like).
-- **Phonology Engine:** Generates sounds and syllable structures specific to the chosen influence.
-- **Morphology Engine:** Implements word-building rules based on linguistic typologies (agglutinative, root-and-pattern, etc.).
-- **Lexicon Management:** Generates core vocabularies and exports them as structured JSON.
-- **CLI Interface:** Easily generate language packages via the command line.
+- **Component-based Generation**: Dynamically mix-and-match phonological, morphological, and syntactic profiles to create diverse languages.
+- **Rule-based Synthesis**: 
+    - **Phonology Engine**: Generates syllables based on custom phonotactic patterns (e.g., `C(C)V(C)`) with support for tone and vowel harmony.
+    - **Morphology Engine**: Supports complex transformation rules including Suffix/Prefix/Infix insertion and Reduplication.
+    - **Sound Change Engine**: Simulates diachronic phonological shifts for historical consistency.
+- **CLI Interface**: Generate complex language packages directly from the command line.
 
 ## Quick Start
 
-1. **Install dependencies** (standard Python library used).
+1. **Build the project:**
+   ```bash
+   cargo build --release
+   ```
+
 2. **Generate a language:**
    ```bash
-   python3 cli.py --archetype turkic --output output/my_language.json
+   cargo run --release -- --phonology uralic_finnic --morphology agglutinative --syntax svo --output my_language.json
    ```
 
 ## Project Structure
 
 ```
 esoterica/
-├── archetypes.py    # Definitions of linguistic profiles
-├── phonology.py     # Phoneme generation and phonotactics
-├── morphology.py    # Word structure and grammar rules
-├── lexicon.py       # Dictionary generation
-├── cli.py           # Command-line interface
-└── tests/           # Test suite
+├── src/
+│   ├── main.rs            # CLI and orchestration logic
+│   ├── archetypes.rs      # Registry of linguistic components
+│   ├── phonology.rs       # Syllable and word generation engine
+│   ├── morphology.rs      # Morphological transformation engine
+│   ├── sound_change.rs    # Diachronic sound change simulation
+│   ├── syntax.rs          # Word order management
+│   └── lexicon.rs         # Dictionary generation and management
+├── Cargo.toml             # Rust dependencies
+└── README.md              # Project documentation
 ```
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a pull request for new archetypes, morphological rules, or features.
+Contributions are welcome! Feel free to submit a pull request for new archetypes, morphological rules, or advanced features.
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.

@@ -1,6 +1,7 @@
 pub mod app;
 pub mod ui;
 pub mod event;
+pub mod components;
 
 use ratatui::{backend::CrosstermBackend, Terminal};
 use std::io;

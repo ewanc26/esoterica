@@ -32,7 +32,8 @@ pub enum MorphRule {
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Syntax {
-    pub word_order: String, // VSO, SVO, SOV
+    pub word_order: String,
+    pub cases: Vec<String>, // e.g., ["nominative", "accusative", "genitive"]
 }
 
 pub fn get_phonology_registry() -> HashMap<String, Phonology> {
@@ -49,8 +50,8 @@ pub fn get_phonology_registry() -> HashMap<String, Phonology> {
 pub fn get_sound_change_registry() -> HashMap<String, Vec<SoundChange>> {
     serde_json::from_str(r#"{
         "finnic_to_estonian": [
-            { "pattern": "k", "replacement": "g", "context": "V_V" },
-            { "pattern": "t", "replacement": "d", "context": "V_V" }
+            { "pattern": "k", "replacement": "g", "context": "word_final" },
+            { "pattern": "t", "replacement": "d", "context": "word_initial" }
         ]
     }"#).unwrap()
 }
@@ -65,6 +66,9 @@ pub fn get_morphology_registry() -> HashMap<String, Morphology> {
 
 pub fn get_syntax_registry() -> HashMap<String, Syntax> {
     serde_json::from_str(r#"{
-        "svo": { "word_order": "SVO" }
+        "svo_nom_acc": { 
+            "word_order": "SVO",
+            "cases": ["nominative", "accusative"]
+        }
     }"#).unwrap()
 }

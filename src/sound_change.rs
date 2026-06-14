@@ -2,12 +2,11 @@ use crate::archetypes::SoundChange;
 
 pub struct SoundChangeEngine {
     rules: Vec<SoundChange>,
-    vowels: Vec<String>,
 }
 
 impl SoundChangeEngine {
-    pub fn new(rules: Vec<SoundChange>, vowels: Vec<String>) -> Self {
-        Self { rules, vowels }
+    pub fn new(rules: Vec<SoundChange>) -> Self {
+        Self { rules }
     }
 
     pub fn apply(&self, word: &str) -> String {
@@ -19,33 +18,26 @@ impl SoundChangeEngine {
     }
 
     fn apply_rule(&self, word: &str, rule: &SoundChange) -> String {
-        let mut new_word = String::new();
-        let chars: Vec<char> = word.chars().collect();
+        let pattern = &rule.pattern;
+        let replacement = &rule.replacement;
         
-        for i in 0..chars.len() {
-            let mut matched = false;
-            if chars[i].to_string() == rule.pattern {
-                if let Some(context) = &rule.context {
-                    if context == "V_V" 
-                        && i > 0 && i < chars.len() - 1 
-                        && self.is_vowel(chars[i-1]) && self.is_vowel(chars[i+1]) {
-                        matched = true;
-                    }
+        match &rule.context {
+            Some(ctx) if ctx == "word_final" => {
+                if word.ends_with(pattern) {
+                    let new_end = word.len() - pattern.len();
+                    format!("{}{}", &word[..new_end], replacement)
                 } else {
-                    matched = true;
+                    word.to_string()
                 }
-            }
-            
-            if matched {
-                new_word.push_str(&rule.replacement);
-            } else {
-                new_word.push(chars[i]);
-            }
+            },
+            Some(ctx) if ctx == "word_initial" => {
+                if word.starts_with(pattern) {
+                    format!("{}{}", replacement, &word[pattern.len()..])
+                } else {
+                    word.to_string()
+                }
+            },
+            _ => word.replace(pattern, replacement),
         }
-        new_word
-    }
-
-    fn is_vowel(&self, c: char) -> bool {
-        self.vowels.iter().any(|v| v.contains(c))
     }
 }

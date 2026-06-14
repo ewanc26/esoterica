@@ -16,11 +16,10 @@ pub struct LexiconGenerator {
 
 impl LexiconGenerator {
     pub fn new(phonology: Phonology, morphology: Morphology, sound_changes: Vec<SoundChange>) -> Self {
-        let vowels = phonology.vowels.clone();
         Self {
             phonology: PhonologyEngine::new(phonology),
             morphology: MorphologyEngine::new(morphology),
-            sound_change: SoundChangeEngine::new(sound_changes, vowels),
+            sound_change: SoundChangeEngine::new(sound_changes),
             lexicon: HashMap::new(),
         }
     }

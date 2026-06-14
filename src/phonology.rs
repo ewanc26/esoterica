@@ -38,19 +38,23 @@ impl PhonologyEngine {
     }
 
     pub fn to_ipa(&self, word: &str) -> String {
-        let mut ipa = String::from("/");
-        for c in word.chars() {
-            let symbol = match c {
-                'p' => "p", 'b' => "b", 't' => "t", 'd' => "d", 'k' => "k", 'g' => "ɡ",
-                'm' => "m", 'n' => "n", 'r' => "ɾ", 'l' => "l", 's' => "s", 'h' => "h",
-                'f' => "f", 'v' => "v", 'j' => "j", 'w' => "w", 'a' => "a", 'e' => "e",
-                'i' => "i", 'o' => "o", 'u' => "u", 'ä' => "æ", 'ö' => "ø", 'y' => "y",
-                'q' => "q", 'z' => "z", 'ʃ' => "ʃ", 'ç' => "ç", 'ʔ' => "ʔ", 'ʕ' => "ʕ", 
-                _ => &c.to_string(),
-            };
-            ipa.push_str(symbol);
+        let mut ipa = word.to_string();
+        
+        // Map digraphs/consonants to IPA
+        let mappings = [
+            ("sh", "ʃ"), ("ng", "ŋ"), ("ch", "tʃ"), ("th", "θ"),
+            ("p", "p"), ("b", "b"), ("t", "t"), ("d", "d"), ("k", "k"), ("g", "ɡ"),
+            ("m", "m"), ("n", "n"), ("r", "ɾ"), ("l", "l"), ("s", "s"), ("h", "h"),
+            ("f", "f"), ("v", "v"), ("j", "j"), ("w", "w"),
+            ("a", "a"), ("e", "e"), ("i", "i"), ("o", "o"), ("u", "u"), 
+            ("ä", "æ"), ("ö", "ø"), ("y", "y"),
+            ("q", "q"), ("z", "z"), ("ç", "ç"), ("ʔ", "ʔ"), ("ʕ", "ʕ"),
+        ];
+
+        for (from, to) in mappings {
+            ipa = ipa.replace(from, to);
         }
-        ipa.push('/');
-        ipa
+        
+        format!("/{}/", ipa)
     }
 }

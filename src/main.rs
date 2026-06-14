@@ -69,11 +69,7 @@ async fn main() -> EyreResult<()> {
         let publisher = atproto::AtprotoPublisher::new(agent);
         let publication_uri = args.publication_uri.context("Need --publication-uri to publish dictionary")?;
         
-        let lexicon_map: std::collections::HashMap<String, String> = lexicon.0.iter()
-            .map(|(k, v)| (k.clone(), v.senses.first().map(|s| s.definition.clone()).unwrap_or_default()))
-            .collect();
-            
-        let uri = publisher.publish_dictionary(&lexicon_map, &title, &publication_uri).await
+        let uri = publisher.publish_dictionary(&lexicon.0, &title, &publication_uri).await
             .map_err(|e| color_eyre::eyre::eyre!(e))?;
         println!("Published dictionary document to ATProto: {}", uri);
     }

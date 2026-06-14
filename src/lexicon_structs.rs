@@ -23,6 +23,7 @@ pub struct LexiconEntry {
     pub ipa: String,
     pub senses: Vec<Sense>,
     pub noun_class: Option<String>,
+    pub root: String,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]

@@ -1,5 +1,13 @@
-__pycache__/
-*.pyc
-*.pyo
-output/
+# Rust ignore rules
+/target
+**/*.rs.bk
+
+# OS ignore rules
 .DS_Store
+
+# Output files
+/output
+/*.json
+
+# Environment variables
+.env

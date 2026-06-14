@@ -26,7 +26,7 @@ struct Args {
     morphology: Vec<String>,
 
     #[arg(short, long)]
-    syntax: String,
+    syntax: Option<String>,
 
     #[arg(short, long)]
     output: Option<PathBuf>,
@@ -54,8 +54,11 @@ async fn main() -> Result<()> {
     let morph_reg = archetypes::get_morphology_registry();
     let syntax_reg = archetypes::get_syntax_registry();
     
-    let phono = phono_reg.get(&args.phonology[0]).ok_or_else(|| anyhow!("Unknown phonology"))?.clone();
-    let morph = morph_reg.get(&args.morphology[0]).ok_or_else(|| anyhow!("Unknown morphology"))?.clone();
+    let phono_key = args.phonology.first().context("Phonology is required")?;
+    let morph_key = args.morphology.first().context("Morphology is required")?;
+    
+    let phono = phono_reg.get(phono_key).ok_or_else(|| anyhow!("Unknown phonology"))?.clone();
+    let morph = morph_reg.get(morph_key).ok_or_else(|| anyhow!("Unknown morphology"))?.clone();
     
     let mut merged_sc = Vec::new();
     for key in &args.sound_change {
@@ -64,7 +67,8 @@ async fn main() -> Result<()> {
         }
     }
 
-    let syntax = syntax_reg.get(&args.syntax).ok_or_else(|| anyhow!("Unknown syntax: {}", args.syntax))?.clone();
+    let syntax_key = args.syntax.context("Syntax is required when not running interactively")?;
+    let syntax = syntax_reg.get(&syntax_key).ok_or_else(|| anyhow!("Unknown syntax: {}", syntax_key))?.clone();
 
     let mut generator = lexicon::LexiconGenerator::new(phono, morph, merged_sc);
     let lexicon = generator.generate_core_lexicon(100).clone();

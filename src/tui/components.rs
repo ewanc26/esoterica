@@ -1,6 +1,6 @@
 use ratatui::{
     layout::{Constraint, Direction, Layout},
-    widgets::{Block, Borders, List, ListItem, ListState, Scrollbar, ScrollbarOrientation, ScrollbarState},
+    widgets::{Block, Borders, List, ListItem, ListState, Scrollbar, ScrollbarOrientation, ScrollbarState, Paragraph, Clear},
     style::{Style, Color, Modifier},
     Frame,
 };
@@ -135,5 +135,21 @@ impl ConfigComponent {
             area.inner(&ratatui::layout::Margin { vertical: 1, horizontal: 0 }),
             &mut scrollbar_state,
         );
+    }
+}
+
+pub struct HelpComponent;
+impl Component for HelpComponent {
+    fn handle_event(&mut self, _key_code: KeyCode) -> bool { false }
+    fn render(&self, f: &mut Frame, area: ratatui::layout::Rect) {
+        let text = "Controls:
+Tab: Switch Fields
+Up/Down: Navigate
+Enter: Generate
+s: Save Lexicon
+h: Toggle Help
+q: Quit";
+        f.render_widget(Clear, area);
+        f.render_widget(Paragraph::new(text).block(Block::default().title("Help").borders(Borders::ALL)), area);
     }
 }

@@ -1,7 +1,7 @@
 use crate::archetypes::{self};
 use crate::lexicon::LexiconGenerator;
 use crate::args::Args;
-use crate::tui::components::{ConfigComponent, Component};
+use crate::tui::components::{ConfigComponent, Component, HelpComponent};
 use crate::phonology::PhonologyEngine;
 use crate::morphology::MorphologyEngine;
 
@@ -9,6 +9,8 @@ pub struct App {
     pub config: ConfigComponent,
     pub output: String,
     pub generator: Option<LexiconGenerator>,
+    pub help: HelpComponent,
+    pub show_help: bool,
 }
 
 impl App {
@@ -17,6 +19,8 @@ impl App {
             config: ConfigComponent::new(),
             output: String::new(),
             generator: None,
+            help: HelpComponent,
+            show_help: false,
         }
     }
 
@@ -24,10 +28,17 @@ impl App {
         use crossterm::event::KeyCode;
         match key.code {
             KeyCode::Char('q') => return false,
-            KeyCode::Enter => self.generate(),
-            KeyCode::Char('s') => self.save_lexicon(),
+            KeyCode::Char('h') => self.show_help = !self.show_help,
+            KeyCode::Enter => {
+                if !self.show_help { self.generate(); }
+            },
+            KeyCode::Char('s') => {
+                if !self.show_help { self.save_lexicon(); }
+            },
             code => {
-                self.config.handle_event(code);
+                if !self.show_help {
+                    self.config.handle_event(code);
+                }
             }
         }
         true

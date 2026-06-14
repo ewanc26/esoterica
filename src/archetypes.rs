@@ -20,6 +20,7 @@ pub struct SoundChange {
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Morphology {
     pub rules: Vec<MorphRule>,
+    pub noun_classes: Option<Vec<String>>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -33,7 +34,7 @@ pub enum MorphRule {
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Syntax {
     pub word_order: String,
-    pub cases: Vec<String>, // e.g., ["nominative", "accusative", "genitive"]
+    pub cases: Option<Vec<String>>,
 }
 
 pub fn get_phonology_registry() -> HashMap<String, Phonology> {
@@ -59,16 +60,14 @@ pub fn get_sound_change_registry() -> HashMap<String, Vec<SoundChange>> {
 pub fn get_morphology_registry() -> HashMap<String, Morphology> {
     serde_json::from_str(r#"{
         "agglutinative": {
-            "rules": [{"Suffix": "-en"}, {"Suffix": "-is"}]
+            "rules": [{"Suffix": "-en"}, {"Suffix": "-is"}],
+            "noun_classes": ["animate", "inanimate"]
         }
     }"#).unwrap()
 }
 
 pub fn get_syntax_registry() -> HashMap<String, Syntax> {
     serde_json::from_str(r#"{
-        "svo_nom_acc": { 
-            "word_order": "SVO",
-            "cases": ["nominative", "accusative"]
-        }
+        "svo": { "word_order": "SVO" }
     }"#).unwrap()
 }

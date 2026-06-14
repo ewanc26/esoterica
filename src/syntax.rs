@@ -15,9 +15,9 @@ impl SyntaxEngine {
         
         let inflected_words: Vec<String> = words.iter().enumerate().map(|(i, word)| {
             let case = if i == 0 { 
-                self.syntax.cases.first().unwrap_or(&nom) 
+                self.syntax.cases.as_ref().and_then(|c| c.first()).unwrap_or(&nom) 
             } else { 
-                self.syntax.cases.get(1).unwrap_or(&acc) 
+                self.syntax.cases.as_ref().and_then(|c| c.get(1)).unwrap_or(&acc) 
             };
             format!("{}-{}", word, case)
         }).collect();

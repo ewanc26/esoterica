@@ -1,12 +1,14 @@
 use crate::archetypes::{self};
-use crate::phonology::PhonologyEngine;
-use crate::morphology::MorphologyEngine;
+use crate::lexicon::LexiconGenerator;
 use crate::args::Args;
 use crate::tui::components::{ConfigComponent, Component};
+use crate::phonology::PhonologyEngine;
+use crate::morphology::MorphologyEngine;
 
 pub struct App {
     pub config: ConfigComponent,
     pub output: String,
+    pub generator: Option<LexiconGenerator>,
 }
 
 impl App {
@@ -14,6 +16,7 @@ impl App {
         Self {
             config: ConfigComponent::new(),
             output: String::new(),
+            generator: None,
         }
     }
 
@@ -22,8 +25,9 @@ impl App {
         match key.code {
             KeyCode::Char('q') => return false,
             KeyCode::Enter => self.generate(),
-            _ => {
-                self.config.handle_event(key.code);
+            KeyCode::Char('s') => self.save_lexicon(),
+            code => {
+                self.config.handle_event(code);
             }
         }
         true
@@ -42,9 +46,24 @@ impl App {
             
             let root = ph_engine.generate_word(2);
             let word = mo_engine.apply_rules(&root);
-            self.output = format!("{} {}: Generated {}", ph, mo, word);
+            self.output = format!("Generated: {}", word);
+            
+            let mut gen = LexiconGenerator::new(ph_cfg.clone(), mo_cfg.clone(), Vec::new());
+            gen.generate_core_lexicon(100);
+            self.generator = Some(gen);
         } else {
             self.output = "Error: Invalid selection".to_string();
+        }
+    }
+
+    fn save_lexicon(&mut self) {
+        if let Some(gen) = &self.generator {
+            match gen.save_to_file("lexicon_output.json") {
+                Ok(_) => self.output = "Lexicon saved to lexicon_output.json".to_string(),
+                Err(e) => self.output = format!("Error saving: {}", e),
+            }
+        } else {
+            self.output = "Error: Generate a lexicon first!".to_string();
         }
     }
 }

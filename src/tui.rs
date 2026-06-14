@@ -1,11 +1,11 @@
 use ratatui::{
     backend::CrosstermBackend,
     layout::{Constraint, Direction, Layout},
-    widgets::{Block, Borders, Paragraph, List, ListItem},
+    widgets::{Block, Borders, Paragraph, List, ListItem, ListState},
     style::{Style, Color, Modifier},
     Terminal,
 };
-use crossterm::event::{self, Event, KeyCode};
+use crossterm::event::{self, Event, KeyCode, MouseEventKind};
 use std::io;
 use crate::archetypes::{self};
 use crate::phonology::PhonologyEngine;
@@ -17,18 +17,20 @@ struct App {
     syntax: String,
     output: String,
     fields: Vec<String>,
-    selected_index: usize,
+    list_state: ListState,
 }
 
 impl App {
     fn new() -> Self {
+        let mut state = ListState::default();
+        state.select(Some(0));
         Self {
             phonology: String::new(),
             morphology: String::new(),
             syntax: String::new(),
             output: String::new(),
             fields: vec!["Phonology".to_string(), "Morphology".to_string(), "Syntax".to_string()],
-            selected_index: 0,
+            list_state: state,
         }
     }
 
@@ -46,6 +48,14 @@ impl App {
         } else {
             self.output = "Error: Invalid input".to_string();
         }
+    }
+
+    fn next(&mut self) {
+        let i = match self.list_state.selected() {
+            Some(i) => (i + 1) % self.fields.len(),
+            None => 0,
+        };
+        self.list_state.select(Some(i));
     }
 }
 
@@ -69,47 +79,58 @@ pub fn run_tui() -> io::Result<()> {
                     2 => format!("{}: {}", field, app.syntax),
                     _ => field.clone(),
                 };
-                let style = if i == app.selected_index {
-                    Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD)
-                } else {
-                    Style::default()
-                };
-                ListItem::new(content).style(style)
+                ListItem::new(content)
             }).collect();
 
-            let list = List::new(items).block(Block::default().title("Configuration (Tab to select, Enter to generate)").borders(Borders::ALL));
-            f.render_widget(list, chunks[0]);
+            let list = List::new(items)
+                .block(Block::default().title("Configuration (Tab to select, Enter to generate)").borders(Borders::ALL))
+                .highlight_style(Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD))
+                .highlight_symbol(">> ");
+            
+            f.render_stateful_widget(list, chunks[0], &mut app.list_state);
             
             f.render_widget(Paragraph::new(app.output.as_str()).block(Block::default().title("Output").borders(Borders::ALL)), chunks[1]);
         })?;
 
-        if let Event::Key(key) = event::read()? {
-            match key.code {
-                KeyCode::Char('q') => break,
-                KeyCode::Char(c) => {
-                    match app.selected_index {
-                        0 => app.phonology.push(c),
-                        1 => app.morphology.push(c),
-                        2 => app.syntax.push(c),
-                        _ => {}
+        match event::read()? {
+            Event::Key(key) => {
+                match key.code {
+                    KeyCode::Char('q') => break,
+                    KeyCode::Char(c) => {
+                        if let Some(i) = app.list_state.selected() {
+                            match i {
+                                0 => app.phonology.push(c),
+                                1 => app.morphology.push(c),
+                                2 => app.syntax.push(c),
+                                _ => {}
+                            }
+                        }
                     }
-                }
-                KeyCode::Backspace => {
-                    match app.selected_index {
-                        0 => { app.phonology.pop(); }
-                        1 => { app.morphology.pop(); }
-                        2 => { app.syntax.pop(); }
-                        _ => {}
+                    KeyCode::Backspace => {
+                        if let Some(i) = app.list_state.selected() {
+                            match i {
+                                0 => { app.phonology.pop(); }
+                                1 => { app.morphology.pop(); }
+                                2 => { app.syntax.pop(); }
+                                _ => {}
+                            }
+                        }
                     }
+                    KeyCode::Tab => {
+                        app.next();
+                    }
+                    KeyCode::Enter => {
+                        app.generate();
+                    }
+                    _ => {}
                 }
-                KeyCode::Tab => {
-                    app.selected_index = (app.selected_index + 1) % app.fields.len();
-                }
-                KeyCode::Enter => {
-                    app.generate();
-                }
-                _ => {}
             }
+            Event::Mouse(mouse) => {
+                if let MouseEventKind::Down(_) = mouse.kind {
+                    app.next();
+                }
+            }
+            _ => {}
         }
     }
     Ok(())

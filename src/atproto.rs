@@ -1,8 +1,7 @@
 use anyhow::{Result, Context, anyhow};
 use atrium_api::types::string::Datetime;
-use atrium_api::types::string::RecordKey;
-use atrium_api::types::string::AtIdentifier;
 use atrium_api::types::Unknown;
+use atrium_api::types::string::AtIdentifier;
 use serde_json::json;
 use bsky_sdk::BskyAgent;
 
@@ -49,15 +48,14 @@ impl AtprotoPublisher {
 
         let session = self.agent.get_session().await.context("Not logged in")?;
         
-        let output = self.agent.api.com.atproto.repo.put_record(
-            atrium_api::com::atproto::repo::put_record::InputData {
+        let output = self.agent.api.com.atproto.repo.create_record(
+            atrium_api::com::atproto::repo::create_record::InputData {
                 collection: "site.standard.publication".parse().map_err(|e| anyhow!("{}", e))?,
                 repo: AtIdentifier::Did(session.did.clone()),
-                rkey: RecordKey::from_str(&format!("pub-{}", name.to_lowercase().replace(" ", "-"))).map_err(|e| anyhow!("{}", e))?,
+                rkey: None, // PDS generates rkey
                 record: serde_json::from_value::<Unknown>(record)?,
-                swap_record: None,
-                validate: None,
                 swap_commit: None,
+                validate: None,
             }.into()
         ).await?;
         
@@ -84,19 +82,17 @@ impl AtprotoPublisher {
 
         let session = self.agent.get_session().await.context("Not logged in")?;
 
-        let output = self.agent.api.com.atproto.repo.put_record(
-            atrium_api::com::atproto::repo::put_record::InputData {
+        let output = self.agent.api.com.atproto.repo.create_record(
+            atrium_api::com::atproto::repo::create_record::InputData {
                 collection: "site.standard.document".parse().map_err(|e| anyhow!("{}", e))?,
                 repo: AtIdentifier::Did(session.did.clone()),
-                rkey: RecordKey::from_str(&format!("dict-{}", title).replace(" ", "-")).map_err(|e| anyhow!("{}", e))?,
+                rkey: None, // PDS generates rkey
                 record: serde_json::from_value::<Unknown>(record)?,
-                swap_record: None,
-                validate: None,
                 swap_commit: None,
+                validate: None,
             }.into()
         ).await?;
         
         Ok(output.data.uri)
     }
 }
-use std::str::FromStr;

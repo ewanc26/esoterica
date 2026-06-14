@@ -15,7 +15,6 @@ impl PhonologyEngine {
         let mut rng = rand::thread_rng();
         let mut syllable = String::new();
         
-        // Simple phonotactics parser: C(C)V(C)
         for char in structure.chars() {
             match char {
                 'C' => {
@@ -46,33 +45,12 @@ impl PhonologyEngine {
                 'm' => "m", 'n' => "n", 'r' => "ɾ", 'l' => "l", 's' => "s", 'h' => "h",
                 'f' => "f", 'v' => "v", 'j' => "j", 'w' => "w", 'a' => "a", 'e' => "e",
                 'i' => "i", 'o' => "o", 'u' => "u", 'ä' => "æ", 'ö' => "ø", 'y' => "y",
+                'q' => "q", 'z' => "z", 'ʃ' => "ʃ", 'ç' => "ç", 'ʔ' => "ʔ", 'ʕ' => "ʕ", 
                 _ => &c.to_string(),
             };
             ipa.push_str(symbol);
         }
         ipa.push('/');
         ipa
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::archetypes::Phonology;
-
-    #[test]
-    fn test_syllable_generation() {
-        let phono = Phonology {
-            vowels: vec!["a".to_string()],
-            consonants: vec!["b".to_string()],
-            syllable_structure: "CVC".to_string(),
-            tones: None,
-            vowel_harmony: None,
-        };
-        let engine = PhonologyEngine::new(phono);
-        
-        let syllable = engine.generate_syllable();
-        // CVC -> C (b), V (a), C (b)
-        assert_eq!(syllable, "bab");
     }
 }

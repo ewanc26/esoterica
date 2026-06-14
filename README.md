@@ -10,6 +10,7 @@ Esoterica is a modular, high-performance Rust framework for generating construct
     - **Morphology Engine**: Supports complex transformation rules including Suffix/Prefix/Infix insertion and Reduplication.
     - **Sound Change Engine**: Simulates diachronic phonological shifts for historical consistency.
 - **CLI Interface**: Generate complex language packages directly from the command line.
+- **ATProto Publication**: Publish generated lexicons directly to the ATProto network (Bluesky) using standard record schemas.
 
 ## Quick Start
 
@@ -23,6 +24,21 @@ Esoterica is a modular, high-performance Rust framework for generating construct
    cargo run --release -- --phonology uralic_finnic --morphology agglutinative --syntax svo --output my_language.json
    ```
 
+## ATProto Publication
+
+To publish your generated lexicon to ATProto, you need to use an **App Password** (not your main account password).
+
+1. Get an App Password: https://bsky.app/settings/app-passwords
+2. Configure the following environment variables:
+   ```bash
+   export ATPROTO_HANDLE="your-handle.bsky.social"
+   export ATPROTO_PASSWORD="your-app-password"
+   ```
+3. Run the generator with the publication flag:
+   ```bash
+   cargo run --release -- --phonology uralic_finnic --morphology agglutinative --syntax svo --publish-title "My New Language"
+   ```
+
 ## Project Structure
 
 ```
@@ -34,7 +50,8 @@ esoterica/
 │   ├── morphology.rs      # Morphological transformation engine
 │   ├── sound_change.rs    # Diachronic sound change simulation
 │   ├── syntax.rs          # Word order management
-│   └── lexicon.rs         # Dictionary generation and management
+│   ├── lexicon.rs         # Dictionary generation and management
+│   └── atproto.rs         # ATProto publishing logic
 ├── Cargo.toml             # Rust dependencies
 └── README.md              # Project documentation
 ```

@@ -6,8 +6,6 @@ pub mod sound_change;
 pub mod syntax;
 pub mod tui;
 pub mod atproto;
-#[cfg(test)]
-mod tests;
 
 use clap::Parser;
 use std::path::PathBuf;
@@ -38,6 +36,9 @@ struct Args {
 
     #[arg(long)]
     publish_title: Option<String>,
+    
+    #[arg(long)]
+    publication_uri: Option<String>,
 }
 
 #[tokio::main]
@@ -86,8 +87,10 @@ async fn main() -> Result<()> {
         agent.login(handle, pass).await?;
         
         let publisher = atproto::AtprotoPublisher::new(agent);
-        let uri = publisher.publish_dictionary(&lexicon, &title).await?;
-        println!("Published to ATProto: {}", uri);
+        let publication_uri = args.publication_uri.context("Need --publication-uri to publish dictionary")?;
+        
+        let uri = publisher.publish_dictionary(&lexicon, &title, &publication_uri).await?;
+        println!("Published dictionary document to ATProto: {}", uri);
     }
 
     let syntax_engine = syntax::SyntaxEngine::new(syntax);

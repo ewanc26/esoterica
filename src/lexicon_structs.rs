@@ -1,0 +1,14 @@
+use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct LexiconEntry {
+    pub definition: String,
+    pub part_of_speech: String,
+    pub domain: String,
+    pub examples: Vec<String>,
+    pub root: String,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct Lexicon(pub HashMap<String, LexiconEntry>);

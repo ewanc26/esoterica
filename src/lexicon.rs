@@ -1,17 +1,17 @@
 use crate::phonology::PhonologyEngine;
 use crate::morphology::MorphologyEngine;
-use crate::sound_change::SoundChangeEngine;
 use crate::archetypes::{Phonology, Morphology, SoundChange};
-use std::collections::HashMap;
+use crate::lexicon_structs::{Lexicon, LexiconEntry};
 use std::fs::File;
 use std::io::Write;
 use anyhow::{Context, Result};
+use rand::seq::SliceRandom;
 
 pub struct LexiconGenerator {
     phonology: PhonologyEngine,
     morphology: MorphologyEngine,
-    sound_change: SoundChangeEngine,
-    lexicon: HashMap<String, String>,
+    sound_change: crate::sound_change::SoundChangeEngine,
+    lexicon: Lexicon,
 }
 
 impl LexiconGenerator {
@@ -19,20 +19,33 @@ impl LexiconGenerator {
         Self {
             phonology: PhonologyEngine::new(phonology),
             morphology: MorphologyEngine::new(morphology),
-            sound_change: SoundChangeEngine::new(sound_changes),
-            lexicon: HashMap::new(),
+            sound_change: crate::sound_change::SoundChangeEngine::new(sound_changes),
+            lexicon: Lexicon(std::collections::HashMap::new()),
         }
     }
 
-    pub fn generate_core_lexicon(&mut self, size: usize) -> &HashMap<String, String> {
-        let categories = ["nature", "action", "object", "abstract"];
+    pub fn generate_core_lexicon(&mut self, size: usize) -> &Lexicon {
+        let mut rng = rand::thread_rng();
+        let domains = ["nature", "action", "object", "abstract"];
+        let pos = ["noun", "verb", "adjective"];
         
-        for i in 0..size {
+        for _i in 0..size {
             let root = self.phonology.generate_word(2);
             let morphed = self.morphology.apply_rules(&root);
             let final_word = self.sound_change.apply(&morphed);
             
-            self.lexicon.insert(final_word, format!("{}: definition_{}", categories[i % 4], i));
+            let domain = domains.choose(&mut rng).unwrap();
+            let p_o_s = pos.choose(&mut rng).unwrap();
+            
+            let entry = LexiconEntry {
+                definition: format!("Refers to a concept in the {} domain.", domain),
+                part_of_speech: p_o_s.to_string(),
+                domain: domain.to_string(),
+                examples: vec![format!("This {} is interesting.", final_word)],
+                root: root.clone(),
+            };
+            
+            self.lexicon.0.insert(final_word, entry);
         }
         &self.lexicon
     }

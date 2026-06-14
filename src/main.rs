@@ -70,7 +70,7 @@ async fn main() -> EyreResult<()> {
         let publication_uri = args.publication_uri.context("Need --publication-uri to publish dictionary")?;
         
         let lexicon_map: std::collections::HashMap<String, String> = lexicon.0.iter()
-            .map(|(k, v)| (k.clone(), v.definition.clone()))
+            .map(|(k, v)| (k.clone(), v.definitions.first().cloned().unwrap_or_default()))
             .collect();
             
         let uri = publisher.publish_dictionary(&lexicon_map, &title, &publication_uri).await

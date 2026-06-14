@@ -6,6 +6,7 @@ use std::fs::File;
 use std::io::Write;
 use anyhow::{Context, Result};
 use rand::seq::SliceRandom;
+use std::collections::HashMap;
 
 pub struct LexiconGenerator {
     phonology: PhonologyEngine,
@@ -20,7 +21,7 @@ impl LexiconGenerator {
             phonology: PhonologyEngine::new(phonology),
             morphology: MorphologyEngine::new(morphology),
             sound_change: crate::sound_change::SoundChangeEngine::new(sound_changes),
-            lexicon: Lexicon(std::collections::HashMap::new()),
+            lexicon: Lexicon(HashMap::new()),
         }
     }
 
@@ -29,6 +30,14 @@ impl LexiconGenerator {
         let domains = ["nature", "action", "object", "abstract"];
         let pos = ["noun", "verb", "adjective"];
         
+        // Mock definitions registry
+        let defs: HashMap<(&str, &str), Vec<&str>> = HashMap::from([
+            (("nature", "noun"), vec!["A natural force", "A living entity"]),
+            (("action", "verb"), vec!["To move swiftly", "To create something"]),
+            (("object", "noun"), vec!["A portable tool", "A container"]),
+            (("abstract", "adjective"), vec!["Related to mind", "Complex or hidden"]),
+        ]);
+
         for _i in 0..size {
             let root = self.phonology.generate_word(2);
             let morphed = self.morphology.apply_rules(&root);
@@ -37,12 +46,16 @@ impl LexiconGenerator {
             let domain = domains.choose(&mut rng).unwrap();
             let p_o_s = pos.choose(&mut rng).unwrap();
             
+            let default_defs = vec!["A general concept"];
+            let definitions: Vec<String> = defs.get(&(domain, p_o_s)).unwrap_or(&default_defs).iter().map(|s| s.to_string()).collect();
+            
             let entry = LexiconEntry {
-                definition: format!("Refers to a concept in the {} domain.", domain),
+                definitions,
                 part_of_speech: p_o_s.to_string(),
                 domain: domain.to_string(),
-                examples: vec![format!("This {} is interesting.", final_word)],
-                root: root.clone(),
+                examples: vec![format!("The {} was used efficiently.", final_word), format!("I saw a {} yesterday.", final_word)],
+                ipa: format!("/{}rɪ/", root),
+                root,
             };
             
             self.lexicon.0.insert(final_word, entry);

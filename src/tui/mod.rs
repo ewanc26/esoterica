@@ -5,10 +5,12 @@ pub mod event;
 use ratatui::{backend::CrosstermBackend, Terminal};
 use std::io;
 use crate::args::Args;
-use crossterm::terminal::{disable_raw_mode, enable_raw_mode};
+use crossterm::{execute, terminal::{disable_raw_mode, enable_raw_mode, Clear, ClearType}};
 
 pub fn run_tui(args: Args) -> io::Result<()> {
     enable_raw_mode()?;
+    execute!(io::stdout(), Clear(ClearType::All))?;
+    
     let stdout = io::stdout();
     let backend = CrosstermBackend::new(stdout);
     let mut terminal = Terminal::new(backend)?;

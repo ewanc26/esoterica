@@ -1,8 +1,8 @@
 use ratatui::{
     backend::CrosstermBackend,
     layout::{Constraint, Direction, Layout},
-    widgets::{Block, Borders, Paragraph},
-    style::{Style, Color},
+    widgets::{Block, Borders, Paragraph, List, ListItem},
+    style::{Style, Color, Modifier},
     Terminal,
 };
 use crossterm::event::{self, Event, KeyCode};
@@ -16,6 +16,7 @@ struct App {
     morphology: String,
     syntax: String,
     output: String,
+    fields: Vec<String>,
     selected_index: usize,
 }
 
@@ -26,6 +27,7 @@ impl App {
             morphology: String::new(),
             syntax: String::new(),
             output: String::new(),
+            fields: vec!["Phonology".to_string(), "Morphology".to_string(), "Syntax".to_string()],
             selected_index: 0,
         }
     }
@@ -57,21 +59,28 @@ pub fn run_tui() -> io::Result<()> {
         terminal.draw(|f| {
             let chunks = Layout::default()
                 .direction(Direction::Vertical)
-                .constraints([Constraint::Length(3), Constraint::Length(3), Constraint::Length(3), Constraint::Percentage(50)])
+                .constraints([Constraint::Percentage(70), Constraint::Percentage(30)])
                 .split(f.size());
 
-            let highlight = Style::default().fg(Color::Yellow);
+            let items: Vec<ListItem> = app.fields.iter().enumerate().map(|(i, field)| {
+                let content = match i {
+                    0 => format!("{}: {}", field, app.phonology),
+                    1 => format!("{}: {}", field, app.morphology),
+                    2 => format!("{}: {}", field, app.syntax),
+                    _ => field.clone(),
+                };
+                let style = if i == app.selected_index {
+                    Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD)
+                } else {
+                    Style::default()
+                };
+                ListItem::new(content).style(style)
+            }).collect();
 
-            let phono_block = Block::default().title("Phonology").borders(Borders::ALL).style(if app.selected_index == 0 { highlight } else { Style::default() });
-            f.render_widget(Paragraph::new(app.phonology.as_str()).block(phono_block), chunks[0]);
+            let list = List::new(items).block(Block::default().title("Configuration (Tab to select, Enter to generate)").borders(Borders::ALL));
+            f.render_widget(list, chunks[0]);
             
-            let morph_block = Block::default().title("Morphology").borders(Borders::ALL).style(if app.selected_index == 1 { highlight } else { Style::default() });
-            f.render_widget(Paragraph::new(app.morphology.as_str()).block(morph_block), chunks[1]);
-            
-            let syntax_block = Block::default().title("Syntax").borders(Borders::ALL).style(if app.selected_index == 2 { highlight } else { Style::default() });
-            f.render_widget(Paragraph::new(app.syntax.as_str()).block(syntax_block), chunks[2]);
-            
-            f.render_widget(Paragraph::new(app.output.as_str()).block(Block::default().title("Output").borders(Borders::ALL)), chunks[3]);
+            f.render_widget(Paragraph::new(app.output.as_str()).block(Block::default().title("Output").borders(Borders::ALL)), chunks[1]);
         })?;
 
         if let Event::Key(key) = event::read()? {
@@ -94,7 +103,7 @@ pub fn run_tui() -> io::Result<()> {
                     }
                 }
                 KeyCode::Tab => {
-                    app.selected_index = (app.selected_index + 1) % 3;
+                    app.selected_index = (app.selected_index + 1) % app.fields.len();
                 }
                 KeyCode::Enter => {
                     app.generate();

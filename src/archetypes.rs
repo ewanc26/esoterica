@@ -39,27 +39,41 @@ pub struct Syntax {
 
 pub fn get_phonology_registry() -> HashMap<String, Phonology> {
     serde_json::from_str(r#"{
-        "afroasiatic": {
+        "eurasia_ie_germanic": {
+            "vowels": ["a", "e", "i", "o", "u"],
+            "consonants": ["p", "b", "t", "d", "k", "g", "f", "s", "h", "m", "n", "r", "l"],
+            "syllable_structure": "CCCVCCCC"
+        },
+        "eurasia_ie_romance": {
+            "vowels": ["a", "e", "i", "o", "u"],
+            "consonants": ["p", "b", "t", "d", "k", "g", "f", "v", "s", "z", "m", "n", "r", "l"],
+            "syllable_structure": "CV"
+        },
+        "africa_afroasiatic_semitic": {
             "vowels": ["a", "i", "u"],
             "consonants": ["q", "k", "g", "t", "d", "s", "z", "sh", "h", "m", "n", "r", "l"],
             "syllable_structure": "CVC"
         },
-        "sino_tibetan": {
+        "africa_nigercongo_bantu": {
             "vowels": ["a", "e", "i", "o", "u"],
-            "consonants": ["p", "t", "k", "s", "h", "m", "n", "ng", "l", "j"],
+            "consonants": ["p", "b", "t", "d", "k", "g", "m", "n", "s", "z"],
+            "syllable_structure": "CV"
+        },
+        "asia_sinotibetan_sinitic": {
+            "vowels": ["a", "e", "i", "o", "u"],
+            "consonants": ["p", "t", "k", "s", "h", "m", "n", "ng", "l"],
             "syllable_structure": "CV",
             "tones": 4
         },
-        "uralic_finnic": {
-            "vowels": ["a", "e", "i", "o", "u", "ä", "ö", "y"],
-            "consonants": ["p", "t", "k", "s", "h", "m", "n", "r", "l", "v", "j"],
-            "syllable_structure": "CVC",
-            "vowel_harmony": true
-        },
-        "celtic": {
-            "vowels": ["a", "e", "i", "o", "u"],
-            "consonants": ["p", "b", "t", "d", "k", "g", "m", "n", "r", "l", "s", "h"],
+        "americas_utoaztecan": {
+            "vowels": ["a", "i", "u", "o"],
+            "consonants": ["p", "t", "k", "kw", "s", "h", "m", "n", "w", "j"],
             "syllable_structure": "CVC"
+        },
+        "oceania_austronesian": {
+            "vowels": ["a", "i", "u"],
+            "consonants": ["p", "t", "k", "s", "h", "m", "n", "ng", "l", "r"],
+            "syllable_structure": "CV"
         }
     }"#).unwrap()
 }
@@ -70,9 +84,8 @@ pub fn get_sound_change_registry() -> HashMap<String, Vec<SoundChange>> {
         "lenition": [
             { "pattern": "p", "replacement": "b", "context": "word_final" }
         ],
-        "finnic_to_estonian": [
-            { "pattern": "k", "replacement": "g", "context": "word_final" },
-            { "pattern": "t", "replacement": "d", "context": "word_initial" }
+        "spirantization": [
+            { "pattern": "k", "replacement": "h", "context": "word_final" }
         ]
     }"#).unwrap()
 }
@@ -83,9 +96,9 @@ pub fn get_morphology_registry() -> HashMap<String, Morphology> {
             "rules": [{"Suffix": "-en"}, {"Suffix": "-is"}],
             "noun_classes": ["animate", "inanimate"]
         },
-        "root_and_pattern": {
-            "rules": [{"Infix": "a"}],
-            "noun_classes": ["masculine", "feminine"]
+        "fusional": {
+            "rules": [{"Suffix": "-a"}, {"Suffix": "-o"}],
+            "noun_classes": ["masculine", "feminine", "neuter"]
         },
         "analytic": {
             "rules": [{"Prefix": "pre-"}],

@@ -15,6 +15,7 @@ impl PhonologyEngine {
         let mut rng = rand::thread_rng();
         let mut syllable = String::new();
         
+        // Simple phonotactics parser: C(C)V(C)
         for char in structure.chars() {
             match char {
                 'C' => {
@@ -51,5 +52,27 @@ impl PhonologyEngine {
         }
         ipa.push('/');
         ipa
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::archetypes::Phonology;
+
+    #[test]
+    fn test_syllable_generation() {
+        let phono = Phonology {
+            vowels: vec!["a".to_string()],
+            consonants: vec!["b".to_string()],
+            syllable_structure: "CVC".to_string(),
+            tones: None,
+            vowel_harmony: None,
+        };
+        let engine = PhonologyEngine::new(phono);
+        
+        let syllable = engine.generate_syllable();
+        // CVC -> C (b), V (a), C (b)
+        assert_eq!(syllable, "bab");
     }
 }

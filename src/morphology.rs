@@ -34,3 +34,21 @@ impl MorphologyEngine {
         (word, noun_class)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::archetypes::{Morphology, MorphRule};
+
+    #[test]
+    fn test_morphology_rules() {
+        let morph = Morphology {
+            rules: vec![MorphRule::Suffix("-en".to_string())],
+            noun_classes: None,
+        };
+        let engine = MorphologyEngine::new(morph);
+        let (word, noun_class) = engine.apply_rules("root");
+        assert_eq!(word, "root-en");
+        assert_eq!(noun_class, None);
+    }
+}

@@ -3,24 +3,29 @@ use ratatui::{
     layout::{Constraint, Direction, Layout},
     widgets::{Block, Borders, Paragraph, List, ListItem, ListState},
     style::{Style, Color, Modifier},
-    Terminal,
+    Terminal, Frame,
 };
-use crossterm::event::{self, Event, KeyCode, MouseEventKind};
+use crossterm::event::{self, Event, KeyCode};
 use std::io;
 use crate::archetypes::{self};
 use crate::phonology::PhonologyEngine;
 use crate::morphology::MorphologyEngine;
 
-struct App {
+/// The Component trait defines the interface for UI sections.
+trait Component {
+    fn handle_event(&mut self, key_code: KeyCode) -> bool;
+    fn render(&self, f: &mut Frame, area: ratatui::layout::Rect);
+}
+
+struct ConfigComponent {
     phonology: String,
     morphology: String,
     syntax: String,
-    output: String,
-    fields: Vec<String>,
     list_state: ListState,
+    fields: Vec<String>,
 }
 
-impl App {
+impl ConfigComponent {
     fn new() -> Self {
         let mut state = ListState::default();
         state.select(Some(0));
@@ -28,34 +33,81 @@ impl App {
             phonology: String::new(),
             morphology: String::new(),
             syntax: String::new(),
-            output: String::new(),
-            fields: vec!["Phonology".to_string(), "Morphology".to_string(), "Syntax".to_string()],
             list_state: state,
+            fields: vec!["Phonology".to_string(), "Morphology".to_string(), "Syntax".to_string()],
         }
     }
+}
 
-    fn generate(&mut self) {
-        let phono_reg = archetypes::get_phonology_registry();
-        let morph_reg = archetypes::get_morphology_registry();
-
-        if let (Some(ph), Some(mo)) = (phono_reg.get(&self.phonology), morph_reg.get(&self.morphology)) {
-            let ph_engine = PhonologyEngine::new(ph.clone());
-            let mo_engine = MorphologyEngine::new(mo.clone());
-            
-            let root = ph_engine.generate_word(2);
-            let word = mo_engine.apply_rules(&root);
-            self.output = format!("Generated: {}", word);
-        } else {
-            self.output = "Error: Invalid input".to_string();
+impl Component for ConfigComponent {
+    fn handle_event(&mut self, key_code: KeyCode) -> bool {
+        match key_code {
+            KeyCode::Char(c) => {
+                if let Some(i) = self.list_state.selected() {
+                    match i {
+                        0 => self.phonology.push(c),
+                        1 => self.morphology.push(c),
+                        2 => self.syntax.push(c),
+                        _ => {}
+                    }
+                }
+            }
+            KeyCode::Backspace => {
+                if let Some(i) = self.list_state.selected() {
+                    match i {
+                        0 => { self.phonology.pop(); }
+                        1 => { self.morphology.pop(); }
+                        2 => { self.syntax.pop(); }
+                        _ => {}
+                    }
+                }
+            }
+            KeyCode::Tab => {
+                let i = match self.list_state.selected() {
+                    Some(i) => (i + 1) % self.fields.len(),
+                    None => 0,
+                };
+                self.list_state.select(Some(i));
+            }
+            _ => return false,
         }
+        true
     }
 
-    fn next(&mut self) {
-        let i = match self.list_state.selected() {
-            Some(i) => (i + 1) % self.fields.len(),
-            None => 0,
-        };
-        self.list_state.select(Some(i));
+    fn render(&self, f: &mut Frame, area: ratatui::layout::Rect) {
+        let items: Vec<ListItem> = self.fields.iter().enumerate().map(|(i, field)| {
+            let content = match i {
+                0 => format!("{}: {}", field, self.phonology),
+                1 => format!("{}: {}", field, self.morphology),
+                2 => format!("{}: {}", field, self.syntax),
+                _ => field.clone(),
+            };
+            let style = if Some(i) == self.list_state.selected() {
+                Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD)
+            } else {
+                Style::default()
+            };
+            ListItem::new(content).style(style)
+        }).collect();
+
+        let list = List::new(items)
+            .block(Block::default().title("Configuration (Tab to select, Enter to generate)").borders(Borders::ALL))
+            .highlight_style(Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD))
+            .highlight_symbol(">> ");
+        
+        f.render_stateful_widget(list, area, &mut self.list_state.clone());
+    }
+}
+
+struct OutputComponent {
+    output: String,
+}
+
+impl Component for OutputComponent {
+    fn handle_event(&mut self, _key_code: KeyCode) -> bool { false }
+
+    fn render(&self, f: &mut Frame, area: ratatui::layout::Rect) {
+        f.render_widget(Paragraph::new(self.output.as_str()).block(Block::default().title("Output").borders(Borders::ALL)), area);
     }
 }
 
@@ -63,7 +115,9 @@ pub fn run_tui() -> io::Result<()> {
     let stdout = io::stdout();
     let backend = CrosstermBackend::new(stdout);
     let mut terminal = Terminal::new(backend)?;
-    let mut app = App::new();
+    
+    let mut config_comp = ConfigComponent::new();
+    let mut output_comp = OutputComponent { output: String::new() };
 
     loop {
         terminal.draw(|f| {
@@ -72,65 +126,32 @@ pub fn run_tui() -> io::Result<()> {
                 .constraints([Constraint::Percentage(70), Constraint::Percentage(30)])
                 .split(f.size());
 
-            let items: Vec<ListItem> = app.fields.iter().enumerate().map(|(i, field)| {
-                let content = match i {
-                    0 => format!("{}: {}", field, app.phonology),
-                    1 => format!("{}: {}", field, app.morphology),
-                    2 => format!("{}: {}", field, app.syntax),
-                    _ => field.clone(),
-                };
-                ListItem::new(content)
-            }).collect();
-
-            let list = List::new(items)
-                .block(Block::default().title("Configuration (Tab to select, Enter to generate)").borders(Borders::ALL))
-                .highlight_style(Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD))
-                .highlight_symbol(">> ");
-            
-            f.render_stateful_widget(list, chunks[0], &mut app.list_state);
-            
-            f.render_widget(Paragraph::new(app.output.as_str()).block(Block::default().title("Output").borders(Borders::ALL)), chunks[1]);
+            config_comp.render(f, chunks[0]);
+            output_comp.render(f, chunks[1]);
         })?;
 
-        match event::read()? {
-            Event::Key(key) => {
-                match key.code {
-                    KeyCode::Char('q') => break,
-                    KeyCode::Char(c) => {
-                        if let Some(i) = app.list_state.selected() {
-                            match i {
-                                0 => app.phonology.push(c),
-                                1 => app.morphology.push(c),
-                                2 => app.syntax.push(c),
-                                _ => {}
-                            }
-                        }
+        if let Event::Key(key) = event::read()? {
+            match key.code {
+                KeyCode::Char('q') => break,
+                KeyCode::Enter => {
+                    let phono_reg = archetypes::get_phonology_registry();
+                    let morph_reg = archetypes::get_morphology_registry();
+
+                    if let (Some(ph), Some(mo)) = (phono_reg.get(&config_comp.phonology), morph_reg.get(&config_comp.morphology)) {
+                        let ph_engine = PhonologyEngine::new(ph.clone());
+                        let mo_engine = MorphologyEngine::new(mo.clone());
+                        
+                        let root = ph_engine.generate_word(2);
+                        let word = mo_engine.apply_rules(&root);
+                        output_comp.output = format!("Generated: {}", word);
+                    } else {
+                        output_comp.output = "Error: Invalid input".to_string();
                     }
-                    KeyCode::Backspace => {
-                        if let Some(i) = app.list_state.selected() {
-                            match i {
-                                0 => { app.phonology.pop(); }
-                                1 => { app.morphology.pop(); }
-                                2 => { app.syntax.pop(); }
-                                _ => {}
-                            }
-                        }
-                    }
-                    KeyCode::Tab => {
-                        app.next();
-                    }
-                    KeyCode::Enter => {
-                        app.generate();
-                    }
-                    _ => {}
+                }
+                code => {
+                    config_comp.handle_event(code);
                 }
             }
-            Event::Mouse(mouse) => {
-                if let MouseEventKind::Down(_) = mouse.kind {
-                    app.next();
-                }
-            }
-            _ => {}
         }
     }
     Ok(())

@@ -10,7 +10,7 @@ impl MorphologyEngine {
         Self { morphology }
     }
 
-    pub fn apply_rules(&self, root: &str) -> String {
+    pub fn apply_rules(&self, root: &str) -> (String, Option<String>) {
         let mut word = root.to_string();
         for rule in &self.morphology.rules {
             match rule {
@@ -24,13 +24,13 @@ impl MorphologyEngine {
             }
         }
         
-        // Add Noun Class Agreement
-        if let Some(classes) = &self.morphology.noun_classes {
+        // Return word and randomly chosen noun class if available
+        let noun_class = if let Some(classes) = &self.morphology.noun_classes {
             let mut rng = rand::thread_rng();
-            if let Some(nc) = classes.choose(&mut rng) {
-                word = format!("{}-{}", word, nc);
-            }
-        }
-        word
+            classes.choose(&mut rng).cloned()
+        } else {
+            None
+        };
+        (word, noun_class)
     }
 }

@@ -57,7 +57,7 @@ impl App {
             
             let root = ph_engine.generate_word(2);
             let word = mo_engine.apply_rules(&root);
-            self.output = format!("Generated: {}", word);
+            self.output = format!("Generated: {:?}", word);
             
             let mut gen = LexiconGenerator::new(ph_cfg.clone(), mo_cfg.clone(), Vec::new());
             gen.generate_core_lexicon(100);

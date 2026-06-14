@@ -30,7 +30,6 @@ impl LexiconGenerator {
         let domains = ["nature", "action", "object", "abstract"];
         let pos = ["noun", "verb", "adjective"];
         
-        // Mock definitions registry
         let defs: HashMap<(&str, &str), Vec<&str>> = HashMap::from([
             (("nature", "noun"), vec!["A natural force", "A living entity"]),
             (("action", "verb"), vec!["To move swiftly", "To create something"]),
@@ -40,8 +39,8 @@ impl LexiconGenerator {
 
         for _i in 0..size {
             let root = self.phonology.generate_word(2);
-            let morphed = self.morphology.apply_rules(&root);
-            let final_word = self.sound_change.apply(&morphed);
+            let (morphed_word, noun_class) = self.morphology.apply_rules(&root);
+            let final_word = self.sound_change.apply(&morphed_word);
             
             let domain = domains.choose(&mut rng).unwrap();
             let p_o_s = pos.choose(&mut rng).unwrap();
@@ -54,8 +53,9 @@ impl LexiconGenerator {
                 part_of_speech: p_o_s.to_string(),
                 domain: domain.to_string(),
                 examples: vec![format!("The {} was used efficiently.", final_word), format!("I saw a {} yesterday.", final_word)],
-                ipa: format!("/{}rɪ/", root),
+                ipa: self.phonology.to_ipa(&root),
                 root,
+                noun_class,
             };
             
             self.lexicon.0.insert(final_word, entry);

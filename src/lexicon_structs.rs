@@ -9,6 +9,7 @@ pub struct LexiconEntry {
     pub examples: Vec<String>,
     pub ipa: String,
     pub root: String,
+    pub noun_class: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]

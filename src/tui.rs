@@ -10,6 +10,7 @@ use std::io;
 use crate::archetypes::{self};
 use crate::phonology::PhonologyEngine;
 use crate::morphology::MorphologyEngine;
+use crate::args::Args;
 
 /// The Component trait defines the interface for UI sections.
 trait Component {
@@ -26,13 +27,13 @@ struct ConfigComponent {
 }
 
 impl ConfigComponent {
-    fn new() -> Self {
+    fn new(args: Args) -> Self {
         let mut state = ListState::default();
         state.select(Some(0));
         Self {
-            phonology: String::new(),
-            morphology: String::new(),
-            syntax: String::new(),
+            phonology: args.phonology.first().cloned().unwrap_or_default(),
+            morphology: args.morphology.first().cloned().unwrap_or_default(),
+            syntax: args.syntax.unwrap_or_default(),
             list_state: state,
             fields: vec!["Phonology".to_string(), "Morphology".to_string(), "Syntax".to_string()],
         }
@@ -111,12 +112,12 @@ impl Component for OutputComponent {
     }
 }
 
-pub fn run_tui() -> io::Result<()> {
+pub fn run_tui(args: Args) -> io::Result<()> {
     let stdout = io::stdout();
     let backend = CrosstermBackend::new(stdout);
     let mut terminal = Terminal::new(backend)?;
     
-    let mut config_comp = ConfigComponent::new();
+    let mut config_comp = ConfigComponent::new(args);
     let mut output_comp = OutputComponent { output: String::new() };
 
     loop {

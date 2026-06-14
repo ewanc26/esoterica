@@ -6,46 +6,18 @@ pub mod sound_change;
 pub mod syntax;
 pub mod tui;
 pub mod atproto;
+pub mod args;
 
-use clap::Parser;
-use std::path::PathBuf;
 use anyhow::{Result, Context, anyhow};
-use crossterm::terminal::{disable_raw_mode, enable_raw_mode};
+use args::Args;
 use bsky_sdk::BskyAgent;
-
-#[derive(Parser, Debug)]
-#[command(author, version, about, long_about = None)]
-struct Args {
-    #[arg(short, long, value_delimiter = ',')]
-    phonology: Vec<String>,
-
-    #[arg(short, long, value_delimiter = ',')]
-    sound_change: Vec<String>,
-
-    #[arg(short, long, value_delimiter = ',')]
-    morphology: Vec<String>,
-
-    #[arg(short, long)]
-    syntax: Option<String>,
-
-    #[arg(short, long)]
-    output: Option<PathBuf>,
-
-    #[arg(long)]
-    interactive: bool,
-
-    #[arg(long)]
-    publish_title: Option<String>,
-}
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    let args = Args::parse();
+    let args = Args::parse_args();
     
     if args.interactive {
-        enable_raw_mode()?;
-        tui::run_tui()?;
-        disable_raw_mode()?;
+        tui::run_tui(args)?;
         return Ok(());
     }
 
@@ -56,6 +28,7 @@ async fn main() -> Result<()> {
     
     let phono_key = args.phonology.first().context("Phonology is required")?;
     let morph_key = args.morphology.first().context("Morphology is required")?;
+    let syntax_key = args.syntax.context("Syntax is required")?;
     
     let phono = phono_reg.get(phono_key).ok_or_else(|| anyhow!("Unknown phonology"))?.clone();
     let morph = morph_reg.get(morph_key).ok_or_else(|| anyhow!("Unknown morphology"))?.clone();
@@ -67,7 +40,6 @@ async fn main() -> Result<()> {
         }
     }
 
-    let syntax_key = args.syntax.context("Syntax is required when not running interactively")?;
     let syntax = syntax_reg.get(&syntax_key).ok_or_else(|| anyhow!("Unknown syntax: {}", syntax_key))?.clone();
 
     let mut generator = lexicon::LexiconGenerator::new(phono, morph, merged_sc);
@@ -88,17 +60,7 @@ async fn main() -> Result<()> {
         agent.login(handle, pass).await?;
         
         let publisher = atproto::AtprotoPublisher::new(agent);
-        
-        // Find or create "Conlang Dictionary" publication
-        let pubs = publisher.list_publications().await?;
-        let publication_uri = if let Some(p) = pubs.iter().find(|p| p.0 == "Conlang Dictionary") {
-            p.1.clone()
-        } else {
-            println!("'Conlang Dictionary' publication not found. Creating...");
-            let name = "Conlang Dictionary";
-            let url = "https://example.com/conlang-dict"; // Placeholder
-            publisher.publish_publication(name, url).await?
-        };
+        let publication_uri = args.publication_uri.context("Need --publication-uri to publish dictionary")?;
         
         let uri = publisher.publish_dictionary(&lexicon, &title, &publication_uri).await?;
         println!("Published dictionary document to ATProto: {}", uri);

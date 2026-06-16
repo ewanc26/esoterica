@@ -40,7 +40,6 @@ ewanc26/obsidian
 ewanc26/pds-backup
 ewanc26/nix-starter
 ewanc26/.github
-ewanc26/azurite
 ewanc26/mc-server
 ewanc26/moonstone
 ewanc26/malachite

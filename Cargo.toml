@@ -1,3 +1,7 @@
+# Esoterica — modular conlang generation framework
+# Build: cargo build --release
+# WASM:  wasm-pack build --features wasm --no-default-features
+
 [package]
 name = "esoterica"
 version = "0.1.0"
@@ -17,7 +21,7 @@ cli = ["dep:clap", "dep:ratatui", "dep:crossterm", "dep:tokio", "dep:color-eyre"
 wasm = ["dep:wasm-bindgen", "dep:js-sys", "dep:console_error_panic_hook", "dep:getrandom"]
 
 [dependencies]
-# Core (always available)
+# ── Core (always available) ──────────────────────────────────────────────
 serde = { version = "1.0.201", features = ["derive"] }
 serde_json = "1.0.117"
 toml = "0.8"
@@ -25,7 +29,7 @@ nom = "7.1"
 anyhow = "1.0.86"
 rand = "0.8.5"
 
-# CLI (optional via feature)
+# ── CLI feature (default) ────────────────────────────────────────────────
 clap = { version = "4.5.4", features = ["derive"], optional = true }
 ratatui = { version = "0.26.3", optional = true }
 crossterm = { version = "0.27.0", optional = true }
@@ -36,7 +40,7 @@ tokio = { version = "1.37.0", features = ["full"], optional = true }
 color-eyre = { version = "0.6.3", optional = true }
 futures = { version = "0.3.31", optional = true }
 
-# WASM
+# ── WASM feature ─────────────────────────────────────────────────────────
 wasm-bindgen = { version = "0.2", optional = true }
 js-sys = { version = "0.3", optional = true }
 console_error_panic_hook = { version = "0.1", optional = true }

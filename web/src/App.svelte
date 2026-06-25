@@ -1,8 +1,13 @@
+<!--
+  App.svelte — Root application shell with tabbed navigation.
+  Three tools: phonology designer, lexicon browser, sound change editor.
+-->
 <script>
   import PhonologyDesigner from './lib/PhonologyDesigner.svelte';
   import LexiconBrowser from './lib/LexiconBrowser.svelte';
   import SoundChangeEditor from './lib/SoundChangeEditor.svelte';
 
+  // Active tab state (Svelte 5 rune)
   let activeTab = $state('designer');
 
   const tabs = [
@@ -48,6 +53,7 @@
 </div>
 
 <style>
+  /* Dark theme base — GitHub-dark palette */
   :global(body) {
     font-family: system-ui, -apple-system, sans-serif;
     margin: 0;
@@ -77,6 +83,7 @@
 
   nav { display: flex; gap: 0.5rem; justify-content: center; }
 
+  /* Tab buttons with active highlight */
   button.tab {
     background: #21262d;
     color: #c9d1d9;

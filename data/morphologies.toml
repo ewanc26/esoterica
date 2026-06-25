@@ -1,4 +1,7 @@
+# Morphological profiles defining affixation patterns and noun class systems.
+
 [agglutinative]
+# Concatenative suffixes, one morpheme per grammatical function (e.g. Turkish, Finnish)
 rules = [
     { suffix = "-en" },
     { suffix = "-is" }
@@ -6,6 +9,7 @@ rules = [
 noun_classes = ["animate", "inanimate"]
 
 [fusional]
+# Single affix encodes multiple grammatical categories (e.g. Latin, Russian)
 rules = [
     { suffix = "-a" },
     { suffix = "-o" }
@@ -13,11 +17,13 @@ rules = [
 noun_classes = ["masculine", "feminine", "neuter"]
 
 [analytic]
+# Minimal inflection, word order does the work (e.g. Mandarin, English)
 rules = [
     { prefix = "pre-" }
 ]
 
 [polysynthetic]
+# Heavy affixation stacking, often incorporating multiple roots (e.g. Inuktitut)
 rules = [
     { prefix = "ti-" },
     { suffix = "-ya" },

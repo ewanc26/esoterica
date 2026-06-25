@@ -60,7 +60,7 @@ impl OrthographyEngine {
     }
 
     /// Generate a complete orthography mapping for the given phonology.
-    /// Returns a mapping of phoneme → Glyph.
+    /// Returns a mapping of phoneme/glyph-key → Glyph.
     pub fn generate(&mut self, phonology: Phonology) -> HashMap<String, Glyph> {
         let mut mapping = HashMap::new();
         let mut rng = rand::thread_rng();
@@ -157,6 +157,8 @@ impl OrthographyEngine {
         mapping
     }
 
+    // ── Pattern Generation ──────────────────────────────────────────────────
+
     fn generate_syllable_patterns(&self, phonology: &Phonology) -> Vec<String> {
         let mut patterns = Vec::new();
         for c in &phonology.consonants {
@@ -166,6 +168,8 @@ impl OrthographyEngine {
         }
         patterns
     }
+
+    // ── Glyph Construction ──────────────────────────────────────────────────
 
     fn generate_glyph(&self, phoneme: &str, category: &str, rng: &mut impl Rng) -> Glyph {
         let svg_path = match self.style {
@@ -196,6 +200,10 @@ impl OrthographyEngine {
             category: "logogram".to_string(),
         }
     }
+
+    // ── SVG Path Generators ─────────────────────────────────────────────────
+    // These produce random paths in each style. The results are not meaningful
+    // glyphs — they exist to give each generated script a distinct visual character.
 
     fn generate_angular_path(&self, rng: &mut impl Rng) -> String {
         let x1 = rng.gen_range(0..20);

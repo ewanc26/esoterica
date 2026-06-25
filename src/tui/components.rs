@@ -1,3 +1,6 @@
+//! Reusable UI components: config selector with four list panels, and a help overlay.
+//! Follows a minimal Component trait for key handling and rendering.
+
 use ratatui::{
     layout::{Constraint, Direction, Layout},
     widgets::{Block, Borders, List, ListItem, ListState, Scrollbar, ScrollbarOrientation, ScrollbarState, Paragraph, Clear},
@@ -7,11 +10,16 @@ use ratatui::{
 use crossterm::event::KeyCode;
 use crate::archetypes;
 
+/// Common interface for TUI widget components.
 pub trait Component {
     fn handle_event(&mut self, key_code: KeyCode) -> bool;
     fn render(&self, f: &mut Frame, area: ratatui::layout::Rect);
 }
 
+// ── Config Selection Panel ──────────────────────────────────────────────
+
+/// Four-column config browser: phonology, morphology, syntax, sound changes.
+/// User tabs between columns and navigates items with Up/Down.
 pub struct ConfigComponent {
     phonology_options: Vec<String>,
     morphology_options: Vec<String>,
@@ -51,6 +59,7 @@ impl ConfigComponent {
         }
     }
 
+    /// Return the currently selected configuration values.
     pub fn get_selected_values(&self) -> (String, String, String, Vec<String>) {
         let ph = self.phono_list_state.selected().and_then(|i| self.phonology_options.get(i)).cloned().unwrap_or_default();
         let mo = self.morph_list_state.selected().and_then(|i| self.morphology_options.get(i)).cloned().unwrap_or_default();
@@ -59,6 +68,7 @@ impl ConfigComponent {
         (ph, mo, sy, sc)
     }
 
+    /// Move the selection cursor within the active field's list.
     fn move_selection(&mut self, down: bool) {
         let (len, state) = match self.selected_field {
             0 => (self.phonology_options.len(), &mut self.phono_list_state),
@@ -99,6 +109,7 @@ impl Component for ConfigComponent {
 }
 
 impl ConfigComponent {
+    /// Render a single scrollable list panel with title and scrollbar.
     fn render_list(&self, f: &mut Frame, area: ratatui::layout::Rect, title: &str, items: &[String], state: &ListState, is_selected: bool) {
         let list_items: Vec<ListItem> = items.iter().map(|i| ListItem::new(i.as_str())).collect();
         let list = List::new(list_items)
@@ -113,6 +124,8 @@ impl ConfigComponent {
         f.render_stateful_widget(scrollbar, area.inner(&ratatui::layout::Margin { vertical: 1, horizontal: 0 }), &mut scrollbar_state);
     }
 }
+
+// ── Help Overlay ────────────────────────────────────────────────────────
 
 pub struct HelpComponent;
 impl Component for HelpComponent {

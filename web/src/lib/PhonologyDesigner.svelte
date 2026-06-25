@@ -1,3 +1,8 @@
+<!--
+  PhonologyDesigner — Interactive IPA chart for selecting phonemes.
+  Mirrors the TUI designer: browse consonants/vowels by articulation, toggle
+  phonemes on/off, see live counts and a word preview.
+-->
 <script>
   // IPA consonant chart data
   const IPA_CONSONANTS = [
@@ -17,6 +22,7 @@
     { label: 'Open', sounds: ['æ','','ɐ','','ɑ','ɒ'] },
   ];
 
+  // Selected phonemes and configuration (Svelte 5 runes)
   let vowels = $state(['a','e','i','o','u']);
   let consonants = $state(['p','t','k','m','n','s','l','r','h']);
   let syllableStructure = $state('CV');
@@ -25,6 +31,7 @@
   let vowelHarmony = $state(false);
   let preview = $state('');
 
+  // Toggle a consonant in/out of the active set
   function toggleConsonant(sound) {
     if (!sound) return;
     if (consonants.includes(sound)) {
@@ -35,6 +42,7 @@
     generatePreview();
   }
 
+  // Toggle a vowel in/out of the active set
   function toggleVowel(sound) {
     if (!sound) return;
     if (vowels.includes(sound)) {
@@ -45,6 +53,7 @@
     generatePreview();
   }
 
+  // Generate a preview word (WASM integration stub)
   async function generatePreview() {
     try {
       const config = JSON.stringify({
@@ -54,7 +63,7 @@
         vowel_harmony: vowelHarmony,
         num_syllables: 3,
       });
-      // In production: call wasm.generate_word(...)
+      // Future: call wasm.generate_word(config)
       preview = `V:${vowels.length} C:${consonants.length} | ${syllableStructure} | Sample syllable would appear here`;
     } catch (e) {
       preview = 'Preview unavailable (WASM not loaded)';

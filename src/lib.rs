@@ -15,6 +15,8 @@ pub mod semantic_drift;
 pub mod orthography;
 pub mod collaborative;
 
+// ── Feature-Gated Modules ────────────────────────────────────────────────
+
 #[cfg(feature = "cli")]
 pub mod args;
 #[cfg(feature = "cli")]

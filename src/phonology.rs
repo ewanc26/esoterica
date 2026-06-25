@@ -1,3 +1,7 @@
+//! Syllable and word generation from phonotactic templates.
+//! Walks a C/V pattern string, picks random phonemes from the inventory,
+//! and optionally applies tone marking and vowel harmony.
+
 use crate::archetypes::Phonology;
 use rand::seq::SliceRandom;
 use rand::Rng;
@@ -11,6 +15,9 @@ impl PhonologyEngine {
         Self { phonology }
     }
 
+    /// Generate one syllable by walking the phonotactic template.
+    /// C picks a random consonant, V picks a random vowel; other chars are ignored.
+    /// Appends a tone superscript if the phonology is tonal.
     pub fn generate_syllable(&self) -> String {
         let structure = &self.phonology.syllable_structure;
         let mut rng = rand::thread_rng();
@@ -41,6 +48,10 @@ impl PhonologyEngine {
         syllable
     }
 
+    // ── Tone Generation ──────────────────────────────────────────────────────
+
+    /// Generate a tone superscript. 30% chance of a contour (two different tones)
+    /// when enough tone levels exist; otherwise a level tone.
     fn generate_tone(&self, num_tones: u8) -> String {
         let mut rng = rand::thread_rng();
         if num_tones >= 3 && rng.gen_bool(0.3) {
@@ -54,6 +65,7 @@ impl PhonologyEngine {
         Self::tone_to_superscript(level).to_string()
     }
 
+    /// Unicode superscript numeral for tone marking (¹ ² ³ ⁴ ⁵).
     fn tone_to_superscript(tone: u8) -> char {
         match tone {
             1 => '\u{00b9}', 2 => '\u{00b2}', 3 => '\u{00b3}',
@@ -61,6 +73,9 @@ impl PhonologyEngine {
         }
     }
 
+    // ── Word Generation ─────────────────────────────────────────────────────
+
+    /// Generate a word from `num_syllables` syllables, with optional vowel harmony.
     pub fn generate_word(&self, num_syllables: usize) -> String {
         let word: String = (0..num_syllables).map(|_| self.generate_syllable()).collect();
         if self.phonology.vowel_harmony.unwrap_or(false) {
@@ -70,6 +85,11 @@ impl PhonologyEngine {
         }
     }
 
+    // ── Vowel Harmony ────────────────────────────────────────────────────────
+
+    /// Force all vowels in a word to match the front/back class of the first vowel.
+    /// This is a rough heuristic — real vowel harmony systems (Finnish, Hungarian)
+    /// have complex rules about which vowels alternate and which are neutral.
     fn apply_vowel_harmony(&self, word: &str) -> String {
         let front_vowels: Vec<String> = self.phonology.vowels.iter()
             .filter(|v| matches!(v.as_str(), "i" | "e" | "a" | "y" | "o" | "æ"))
@@ -117,6 +137,8 @@ impl PhonologyEngine {
         result
     }
 
+    /// Convert a generated word to a rough IPA transcription via string substitution.
+    /// Not phonetically rigorous — good enough for conlang lexicons.
     pub fn to_ipa(&self, word: &str) -> String {
         let mut ipa = word.to_string();
         let mappings = [

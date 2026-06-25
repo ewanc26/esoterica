@@ -1,3 +1,7 @@
+//! Core lexicon generator. Wires together phonology, morphology, and sound
+//! change engines to produce a complete dictionary of fictional words with
+//! in-universe citations and semantic domains.
+
 use crate::phonology::PhonologyEngine;
 use crate::morphology::MorphologyEngine;
 use crate::archetypes::{Phonology, Morphology, SoundChange};
@@ -9,6 +13,7 @@ use rand::seq::SliceRandom;
 use rand::Rng;
 use std::collections::HashMap;
 
+/// Orchestrates word generation across the pipeline: root → morphology → sound change.
 pub struct LexiconGenerator {
     phonology: PhonologyEngine,
     morphology: MorphologyEngine,
@@ -33,6 +38,10 @@ impl LexiconGenerator {
         self
     }
 
+    // ── Lexicon Generation ──────────────────────────────────────────────────
+
+    /// Generate `size` lexicon entries by cycling through semantic domains and
+    /// parts of speech, assigning each word in-universe citations and definitions.
     pub fn generate_core_lexicon(&mut self, size: usize) -> &Lexicon {
         let mut rng = rand::thread_rng();
         let domains = ["nature", "action", "object", "abstract", "body", "food", "tool", "emotion", "social", "time", "space"];
@@ -127,6 +136,9 @@ impl LexiconGenerator {
         &self.lexicon
     }
 
+    // ── Serialisation ───────────────────────────────────────────────────────
+
+    /// Serialise the lexicon to a JSON file.
     pub fn save_to_file(&self, filename: &str) -> Result<()> {
         let json = serde_json::to_string_pretty(&self.lexicon)?;
         let mut file = File::create(filename).context("Failed to create file")?;

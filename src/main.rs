@@ -1,4 +1,6 @@
-//! Esoterica CLI — requires the `cli` feature (enabled by default).
+//! Esoterica CLI entry point. Requires the `cli` feature (enabled by default).
+//! Orchestrates the full generation pipeline: config loading, phonology, morphology,
+//! sound change, semantic drift, orthography, ATProto publication.
 //! To build for WASM: `wasm-pack build --features wasm --no-default-features`
 
 use esoterica::args::Args;
@@ -19,10 +21,14 @@ async fn main() -> EyreResult<()> {
 
     let args = Args::parse_args();
 
+    // ── Interactive Mode ────────────────────────────────────────────────────
+
     if args.interactive {
         esoterica::tui::run_tui(args)?;
         return Ok(());
     }
+
+    // ── Load Component Registries ───────────────────────────────────────────
 
     let phono_reg = archetypes::get_phonology_registry();
     let sc_reg = archetypes::get_sound_change_registry();
@@ -38,6 +44,7 @@ async fn main() -> EyreResult<()> {
     let morph = morph_reg.get(morph_key)
         .ok_or_else(|| color_eyre::eyre::eyre!("Unknown morphology: {}", morph_key))?.clone();
 
+    // Merge multiple sound-change rule sets (e.g. lenition + palatalization)
     let mut merged_sc = Vec::new();
     for key in &args.sound_change {
         if let Some(sc) = sc_reg.get(key) {
@@ -48,9 +55,13 @@ async fn main() -> EyreResult<()> {
     let syntax = syntax_reg.get(&syntax_key)
         .ok_or_else(|| color_eyre::eyre::eyre!("Unknown syntax: {}", syntax_key))?.clone();
 
+    // ── Lexicon Generation ──────────────────────────────────────────────────
+
     let mut generator = lexicon::LexiconGenerator::new(phono.clone(), morph, merged_sc)
         .with_syllables(args.syllables.unwrap_or(2));
     let mut lexicon = generator.generate_core_lexicon(args.lexicon_size.unwrap_or(100)).clone();
+
+    // ── Semantic Drift ──────────────────────────────────────────────────────
 
     if let Some(ref drift_steps) = args.drift_steps {
         let drift_config = semantic_drift::DriftConfig {
@@ -62,6 +73,8 @@ async fn main() -> EyreResult<()> {
         let history = engine.apply_to_lexicon(&mut lexicon);
         println!("Applied semantic drift over {} steps ({} words affected)", drift_steps, history.len());
     }
+
+    // ── Orthography ─────────────────────────────────────────────────────────
 
     if args.generate_orthography {
         let mut ortho = orthography::OrthographyEngine::new(
@@ -78,10 +91,14 @@ async fn main() -> EyreResult<()> {
         println!("Orthography saved to: {}", ortho_path.display());
     }
 
+    // ── Output ──────────────────────────────────────────────────────────────
+
     if let Some(ref output) = args.output {
         save_lexicon(&lexicon, output)?;
         println!("Lexicon saved to: {:?}", output);
     }
+
+    // ── ATProto Publication ─────────────────────────────────────────────────
 
     if let (Some(title), Ok(handle), Ok(pass)) = (
         args.publish_title,
@@ -100,6 +117,8 @@ async fn main() -> EyreResult<()> {
         println!("Published dictionary document to ATProto: {}", uri);
     }
 
+    // ── Example Sentence ────────────────────────────────────────────────────
+
     let syntax_engine = SyntaxEngine::new(syntax);
     let sentence = syntax_engine.generate_sentence(&[
         "word1".to_string(), "word2".to_string(), "word3".to_string()
@@ -108,6 +127,9 @@ async fn main() -> EyreResult<()> {
     Ok(())
 }
 
+// ── Helpers ────────────────────────────────────────────────────────────────
+
+/// Derive the orthography output path from the lexicon output path.
 fn make_ortho_path(output: Option<&PathBuf>) -> PathBuf {
     match output {
         Some(path) => {
@@ -119,6 +141,7 @@ fn make_ortho_path(output: Option<&PathBuf>) -> PathBuf {
     }
 }
 
+/// Write the lexicon as pretty-printed JSON.
 fn save_lexicon(lexicon: &lexicon_structs::Lexicon, path: &PathBuf) -> EyreResult<()> {
     let json = serde_json::to_string_pretty(lexicon)?;
     std::fs::write(path, &json).context("Failed to write lexicon file")?;

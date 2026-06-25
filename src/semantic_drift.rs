@@ -59,6 +59,10 @@ pub struct SemanticDriftEngine { config: DriftConfig }
 impl SemanticDriftEngine {
     pub fn new(config: DriftConfig) -> Self { Self { config } }
 
+    // ── Core API ───────────────────────────────────────────────────────────
+
+    /// Apply semantic drift to every word in the lexicon across `time_steps` iterations.
+    /// Returns a history map of which words changed and how.
     pub fn apply_to_lexicon(&self, lexicon: &mut Lexicon) -> HashMap<String, Vec<DriftRecord>> {
         let mut history: HashMap<String, Vec<DriftRecord>> = HashMap::new();
         let mut rng = rand::thread_rng();
@@ -77,6 +81,9 @@ impl SemanticDriftEngine {
         history
     }
 
+    // ── Per-Word Engine ─────────────────────────────────────────────────────
+
+    /// Apply a single drift event to one lexicon entry.
     fn drift_word(&self, entry: &mut LexiconEntry, step: usize, rng: &mut impl Rng) -> Option<DriftRecord> {
         if entry.senses.is_empty() { return None; }
         let sense_idx = rng.gen_range(0..entry.senses.len());
@@ -93,6 +100,7 @@ impl SemanticDriftEngine {
         Some(DriftRecord { original_definition: original_def, new_definition: new_def, drift_type, time_step: step + 1, trigger })
     }
 
+    /// Pick a drift type probabilistically and generate a new definition.
     fn pick_drift(&self, definition: &str, rng: &mut impl Rng) -> (DriftType, String, String) {
         let cultural_marker = self.config.cultural_markers.choose(rng).cloned().unwrap_or_else(|| "general_change".to_string());
         let drift_type = match rng.gen_range(0..100) {

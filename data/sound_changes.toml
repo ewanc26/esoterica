@@ -1,12 +1,18 @@
-# Legacy rule sets (simple pattern/replacement with optional context)
+# Legacy rule sets for the sound change engine.
+# Each set is an array of { pattern, replacement, context } objects.
+# Context can be "word_initial", "word_final", or omitted for unconditional replacement.
+# For the formal parser (p > b / V_V), use the API in sound_change.rs instead.
+
 none = []
 
+# Final obstruent voicing (Celtic-style lenition)
 lenition = [
     { pattern = "p", replacement = "b", context = "word_final" },
     { pattern = "t", replacement = "d", context = "word_final" },
     { pattern = "k", replacement = "g", context = "word_final" },
 ]
 
+# Final stops become fricatives
 spirantization = [
     { pattern = "k", replacement = "h", context = "word_final" },
     { pattern = "p", replacement = "f", context = "word_final" },

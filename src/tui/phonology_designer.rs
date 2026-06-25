@@ -1,5 +1,7 @@
 //! Interactive Phonology Designer TUI
 //! Allows toggling phonemes on an IPA grid with real-time syllable preview.
+//! Users can browse the full IPA chart, toggle phonemes on/off, apply presets,
+//! configure syllable structure, tone, and vowel harmony, then confirm the result.
 
 use ratatui::{
     layout::{Constraint, Direction, Layout, Rect},
@@ -13,6 +15,8 @@ use crate::archetypes::Phonology;
 use crate::phonology::PhonologyEngine;
 use std::collections::HashSet;
 
+// ── IPA Chart Data ──────────────────────────────────────────────────────
+
 /// Full IPA consonant chart organized by place/manner of articulation
 const IPA_CONSONANTS: &[(&str, &[&str])] = &[
     ("Plosive", &["p", "b", "t", "d", "\u{0288}", "\u{0256}", "c", "\u{025f}", "k", "g", "q", "\u{0262}", "\u{0294}"]),
@@ -23,6 +27,7 @@ const IPA_CONSONANTS: &[(&str, &[&str])] = &[
     ("Trill/Tap", &["\u{027e}", "r", "\u{0280}"]),
 ];
 
+/// IPA vowel chart organized by vowel height (rows) and backness (columns).
 const IPA_VOWELS: &[(&str, &[&str])] = &[
     ("Close", &["i", "y", "\u{0268}", "\u{0289}", "\u{026f}", "u"]),
     ("Near-close", &["\u{026a}", "\u{028f}", "", "", "\u{028a}"]),
@@ -34,6 +39,8 @@ const IPA_VOWELS: &[(&str, &[&str])] = &[
 
 #[derive(PartialEq, Clone, Copy)]
 enum DesignerTab { Consonants, Vowels, Presets }
+
+// ── Phonology Designer ──────────────────────────────────────────────────
 
 pub struct PhonologyDesigner {
     pub active: bool,
@@ -79,6 +86,9 @@ impl PhonologyDesigner {
 
     pub fn toggle(&mut self) { self.active = !self.active; }
 
+    // ── Key Handling ────────────────────────────────────────────────────────
+
+    /// Handle a single keypress. Returns true if the event was consumed.
     pub fn handle_key(&mut self, key: KeyCode) -> bool {
         if !self.active { return false; }
         match key {
@@ -257,6 +267,8 @@ impl PhonologyDesigner {
             vowel_harmony: Some(self.vowel_harmony),
         }
     }
+
+    // ── Rendering ──────────────────────────────────────────────────────────
 
     pub fn render(&self, f: &mut Frame, area: Rect) {
         let outer = Block::default()

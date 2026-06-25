@@ -1,3 +1,6 @@
+//! Ratatui rendering logic. Composes the layout from config panels, output,
+//! and optional help overlay. Delegates rendering to component `render` methods.
+
 use ratatui::{
     layout::{Constraint, Direction, Layout, Rect},
     widgets::{Block, Borders, Paragraph},
@@ -6,12 +9,14 @@ use ratatui::{
 use crate::tui::app::App;
 use crate::tui::components::Component;
 
+/// Render a single frame: either the main view or the full-screen phonology designer.
 pub fn render(f: &mut Frame, app: &App) {
     if app.designer.active {
         app.designer.render(f, f.size());
         return;
     }
 
+    // Split screen: 80% config panels, 20% output display
     let chunks = Layout::default()
         .direction(Direction::Vertical)
         .constraints([Constraint::Percentage(80), Constraint::Percentage(20)])
@@ -22,12 +27,15 @@ pub fn render(f: &mut Frame, app: &App) {
             .block(Block::default().title("Output [p: designer, h: help]").borders(Borders::ALL)),
         chunks[1],
     );
+
+    // Help overlay centred on screen
     if app.show_help {
         let area = centered_rect(60, 40, f.size());
         app.help.render(f, area);
     }
 }
 
+/// Compute a centred sub-rectangle given percentage dimensions.
 fn centered_rect(percent_x: u16, percent_y: u16, r: Rect) -> Rect {
     let popup_layout = Layout::default()
         .direction(Direction::Vertical)

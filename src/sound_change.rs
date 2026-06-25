@@ -1,3 +1,11 @@
+//! Sound change engine with two backends:
+//! 1. Legacy TOML rules (pattern/replacement/context) from data files.
+//! 2. Formal parser using nom that supports notation like `p > b / V_V`.
+//!
+//! Spec notation: FROM > TO / LEFT_RIGHT
+//!   # = word boundary, V = any vowel, C = any consonant
+//!   ∅ (U+2205) = deletion
+
 use crate::archetypes::SoundChange;
 use nom::{
     IResult,
@@ -9,17 +17,25 @@ use nom::{
     Parser,
 };
 
+// ── FormalRule (Parsed Sound Change) ─────────────────────────────────────
+
+/// A sound change parsed from formal notation, either unconditional or contextual.
 #[derive(Debug, Clone, PartialEq)]
 pub enum FormalRule {
+    /// Applies everywhere the `from` segment appears
     Unconditional { from: String, to: String },
+    /// Applies only when the environment matches left/right context
     Contextual { from: String, to: String, left_context: Option<String>, right_context: Option<String> },
 }
 
 impl FormalRule {
+    /// Parse a rule string into a FormalRule.
+    /// Format: `from > to` or `from > to / left_right`
     pub fn parse(input: &str) -> Result<Self, String> {
         parse_formal_rule(input).map(|(_, rule)| rule).map_err(|e| format!("Failed to parse rule '{}': {:?}", input, e))
     }
 
+    /// Apply this rule to a word, returning the transformed string.
     pub fn apply(&self, word: &str) -> String {
         match self {
             FormalRule::Unconditional { from, to } => {
@@ -64,21 +80,29 @@ impl FormalRule {
     }
 }
 
+// ── Helper Predicates ────────────────────────────────────────────────────
+
 fn is_vowel(c: char) -> bool { matches!(c, 'a' | 'e' | 'i' | 'o' | 'u' | '\u{00e4}' | '\u{00f6}' | 'y' | '\u{00e6}' | '\u{00f8}') }
 fn is_consonant(c: char) -> bool { c.is_alphabetic() && !is_vowel(c) }
 
+// ── Nom Parsers ──────────────────────────────────────────────────────────
+
+/// Parse one alphabetic/IPA segment (e.g. "p", "sh", "ŋ").
 fn parse_segment(input: &str) -> IResult<&str, String> {
     let (input, seg) = recognize(take_while1(|c: char| c.is_alphabetic() || "\u{0283}\u{0292}\u{03b8}\u{00f0}\u{014b}\u{0294}\u{0295}\u{027e}".contains(c)))(input)?;
     Ok((input, seg.to_string()))
 }
 
+/// Parse the empty-set symbol ∅ for deletion rules.
 fn parse_empty(input: &str) -> IResult<&str, String> { let (input, _) = tag("\u{2205}")(input)?; Ok((input, "\u{2205}".to_string())) }
 fn parse_target(input: &str) -> IResult<&str, String> { alt((parse_empty, parse_segment))(input) }
 
+/// Parse a context element: word boundary (#), vowel class (V), consonant class (C), or literal segment.
 fn parse_context_element(input: &str) -> IResult<&str, String> {
     alt((tag("#").map(|s: &str| s.to_string()), tag("V").map(|s: &str| s.to_string()), tag("C").map(|s: &str| s.to_string()), parse_segment))(input)
 }
 
+/// Parse the environment part of a rule: left_/right context around `_`.
 fn parse_environment(input: &str) -> IResult<&str, (Option<String>, Option<String>)> {
     let parse_both = tuple((parse_context_element, delimited(multispace0, tag("_"), multispace0), parse_context_element));
     let parse_right_only = tuple((delimited(multispace0, tag("_"), multispace0), parse_context_element));
@@ -86,6 +110,7 @@ fn parse_environment(input: &str) -> IResult<&str, (Option<String>, Option<Strin
     alt((parse_both.map(|(l, _, r)| (Some(l), Some(r))), parse_right_only.map(|(_, r)| (None, Some(r))), parse_left_only.map(|(l, _)| (Some(l), None))))(input)
 }
 
+/// Top-level parser: `from > to / left_right` or `from > to`.
 fn parse_formal_rule(input: &str) -> IResult<&str, FormalRule> {
     let (input, from) = parse_segment(input)?;
     let (input, _) = delimited(multispace0, tag(">"), multispace0)(input)?;
@@ -98,6 +123,9 @@ fn parse_formal_rule(input: &str) -> IResult<&str, FormalRule> {
     Ok((input, rule))
 }
 
+// ── SoundChangeEngine ────────────────────────────────────────────────────
+
+/// Combined engine that applies legacy TOML rules and parsed formal rules in sequence.
 pub struct SoundChangeEngine { rules: Vec<SoundChange>, formal_rules: Vec<FormalRule> }
 
 impl SoundChangeEngine {

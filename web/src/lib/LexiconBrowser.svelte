@@ -1,3 +1,7 @@
+<!--
+  LexiconBrowser — Configure and generate a conlang lexicon via the WASM engine.
+  Displays results in a sortable table with headword, POS, IPA, definition, etymology.
+-->
 <script>
   let entries = $state([]);
   let loading = $state(false);
@@ -11,15 +15,16 @@
     size: 50,
   });
 
+  // Configuration options, synchronised with data/ TOML files
   const phonologies = ['eurasia_ie_germanic','eurasia_ie_romance','africa_afroasiatic_semitic','africa_nigercongo_bantu','asia_sinotibetan_sinitic','americas_utoaztecan','oceania_austronesian','uralic_finnic'];
   const morphologies = ['agglutinative','fusional','analytic','polysynthetic'];
   const syntaxes = ['svo','sov','vso','vos','ovs','osv'];
   const soundChanges = ['none','lenition','spirantization','grimms_law','final_devoicing','nasal_assimilation','intervocalic_voicing','vowel_reduction','palatalization','rhotacism','cluster_simplification'];
 
+  // Generate a mock lexicon (WASM integration stubs generate_lexicon)
   async function generate() {
     loading = true; error = '';
     try {
-      // In production: call wasm.generate_lexicon(configJson)
       const mockWords = [];
       const chars = 'ptkmnslrhaeiou';
       for (let i = 0; i < config.size; i++) {

@@ -1,11 +1,17 @@
+# Word order and case system configurations.
+# Each entry specifies one of the six major word orders and its associated case system.
+
 [svo]
+# Subject-Verb-Object (English, Chinese, Romance)
 word_order = "SVO"
 cases = ["nominative", "accusative"]
 
 [vso]
+# Verb-Subject-Object (Irish, Welsh, Maori)
 word_order = "VSO"
 cases = ["nominative", "ergative"]
 
 [sov]
+# Subject-Object-Verb (Japanese, Turkish, Korean)
 word_order = "SOV"
 cases = ["nominative", "dative"]

@@ -1,3 +1,7 @@
+//! Sentence generation engine for all six major word orders.
+//! Inflects subject and object with case markers and arranges constituents
+//! according to the configured syntactic profile.
+
 use crate::archetypes::Syntax;
 
 pub struct SyntaxEngine {
@@ -9,6 +13,9 @@ impl SyntaxEngine {
         Self { syntax }
     }
 
+    /// Generate a sentence from a list of words using the configured word order
+    /// and case system. The first word is treated as subject, second as verb,
+    /// third as object; remaining words are appended as modifiers.
     pub fn generate_sentence(&self, words: &[String]) -> String {
         if words.is_empty() {
             return String::new();
@@ -22,6 +29,8 @@ impl SyntaxEngine {
         let verb = if words.len() > 1 { words[1].clone() } else { String::new() };
         let obj = if words.len() > 2 { self.inflect(&words[2], &acc) } else { String::new() };
         let modifiers: Vec<String> = words.iter().skip(3).cloned().collect();
+
+        // ── Word Order Dispatch ──────────────────────────────────────────────
 
         let sentence = match self.syntax.word_order.as_str() {
             "SOV" => {
@@ -49,6 +58,7 @@ impl SyntaxEngine {
                 parts.extend(modifiers);
                 parts.into_iter().filter(|s| !s.is_empty()).collect::<Vec<_>>().join(" ")
             }
+            // Default to SVO for unknown orders
             _ => {
                 let mut parts = vec![subj, verb, obj];
                 parts.extend(modifiers);
@@ -56,6 +66,7 @@ impl SyntaxEngine {
             }
         };
 
+        // Capitalise first letter and append period
         let mut chars: Vec<char> = sentence.chars().collect();
         if let Some(first) = chars.first_mut() {
             *first = first.to_uppercase().next().unwrap_or(*first);
@@ -63,6 +74,7 @@ impl SyntaxEngine {
         format!("{}.", chars.into_iter().collect::<String>())
     }
 
+    /// Apply a case suffix to a word.
     fn inflect(&self, word: &str, case: &str) -> String {
         format!("{}-{}", word, case)
     }

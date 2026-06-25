@@ -1,46 +1,62 @@
+//! CLI argument definitions via clap derive.
+//! Defines the full surface area of the command-line interface.
+
 use clap::Parser;
 use std::path::PathBuf;
 
 #[derive(Parser, Debug, Clone)]
 #[command(author, version, about, long_about = None)]
 pub struct Args {
-    #[arg(short, long, value_delimiter = ',', help = "Phonology archetypes")]
+    /// Phonology archetype key from data/phonologies.toml
+    #[arg(short, long, value_delimiter = ',')]
     pub phonology: Vec<String>,
 
-    #[arg(short = 'c', long, value_delimiter = ',', help = "Sound change rules")]
+    /// Sound change rule set key(s) from data/sound_changes.toml (comma-separated)
+    #[arg(short = 'c', long, value_delimiter = ',')]
     pub sound_change: Vec<String>,
 
-    #[arg(short, long, value_delimiter = ',', help = "Morphology rules")]
+    /// Morphology archetype key from data/morphologies.toml
+    #[arg(short, long, value_delimiter = ',')]
     pub morphology: Vec<String>,
 
-    #[arg(short = 'x', long, help = "Syntax order (SVO, SOV, VSO, VOS, OVS, OSV)")]
+    /// Word order (SVO, SOV, VSO, VOS, OVS, OSV)
+    #[arg(short = 'x', long)]
     pub syntax: Option<String>,
 
-    #[arg(short, long, help = "Output path for the generated lexicon")]
+    /// Output path for the generated lexicon
+    #[arg(short, long)]
     pub output: Option<PathBuf>,
 
-    #[arg(short = 'y', long, help = "Number of syllables per word (default: 2)")]
+    /// Syllables per word (default: 2)
+    #[arg(short = 'y', long)]
     pub syllables: Option<usize>,
 
-    #[arg(short = 'n', long, help = "Number of entries in the lexicon (default: 100)")]
+    /// Lexicon entry count (default: 100)
+    #[arg(short = 'n', long)]
     pub lexicon_size: Option<usize>,
 
-    #[arg(long, help = "Enable interactive TUI mode")]
+    /// Launch the interactive TUI instead of CLI generation
+    #[arg(long)]
     pub interactive: bool,
 
-    #[arg(long, help = "Title for ATProto publication")]
+    /// Title for ATProto dictionary publication
+    #[arg(long)]
     pub publish_title: Option<String>,
 
-    #[arg(long, help = "URI of the target ATProto publication")]
+    /// ATRecord URI of the target publication
+    #[arg(long)]
     pub publication_uri: Option<String>,
 
-    #[arg(long, help = "Number of semantic drift time-steps to simulate")]
+    /// Number of semantic drift time-steps
+    #[arg(long)]
     pub drift_steps: Option<usize>,
 
-    #[arg(long, help = "Probability of drift per word per step (default: 0.15)")]
+    /// Per-word-per-step drift probability (default: 0.15)
+    #[arg(long)]
     pub drift_rate: Option<f64>,
 
-    #[arg(long, help = "Generate a procedural orthography for the language")]
+    /// Generate a procedural orthography/script
+    #[arg(long)]
     pub generate_orthography: bool,
 }
 

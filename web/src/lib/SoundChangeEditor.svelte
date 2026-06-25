@@ -1,4 +1,10 @@
+<!--
+  SoundChangeEditor — Rule editor and word tester using formal sound-change notation.
+  Supports preset loads (Grimm's Law, Verner's Law, palatalization, devoicing)
+  and real-time application to a test word.
+-->
 <script>
+  // Example rules to get started
   let rules = $state([
     { id: 1, rule: 'p > b / V_V', description: 'Voicing between vowels' },
     { id: 2, rule: 'k > h / _#', description: 'Final spirantization' },
@@ -9,10 +15,10 @@
   let result = $state('');
   let error = $state('');
 
+  // Validate and add a new rule
   function addRule() {
     if (!newRule.trim()) return;
     error = '';
-    // Validate basic structure
     if (!newRule.includes('>')) {
       error = 'Rule must contain > (e.g. p > b)';
       return;
@@ -21,14 +27,16 @@
     newRule = '';
   }
 
+  // Remove a rule by id
   function removeRule(id) {
     rules = rules.filter(r => r.id !== id);
   }
 
+  // Apply all rules to the test word sequentially
   async function testRules() {
     error = '';
     try {
-      // In production: call wasm.apply_sound_changes(testWord, rulesJson)
+      // Future: call wasm.apply_sound_changes(testWord, rulesJson)
       let word = testWord;
       for (const r of rules) {
         const [from, to] = r.rule.split('>').map(s => s.trim());
@@ -44,6 +52,7 @@
     }
   }
 
+  // Well-known sound change presets
   const presets = {
     grimm: [
       'p > f', 't > θ', 'k > h',
@@ -59,6 +68,7 @@
     ],
   };
 
+  // Load a preset, replacing the current rule list
   function loadPreset(name) {
     rules = presets[name].map((rule, i) => ({ id: Date.now() + i, rule, description: '' }));
   }

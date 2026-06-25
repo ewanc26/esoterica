@@ -1,3 +1,5 @@
+//! Ratatui-based interactive TUI entry point and module declarations.
+
 pub mod app;
 pub mod ui;
 pub mod event;
@@ -12,6 +14,8 @@ use crossterm::{
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen, Clear, ClearType},
 };
 
+/// Launch the interactive TUI.
+/// Switches to alternate screen, runs the event loop, restores terminal on exit.
 pub fn run_tui(args: Args) -> io::Result<()> {
     enable_raw_mode()?;
     let mut stdout = io::stdout();
@@ -20,6 +24,8 @@ pub fn run_tui(args: Args) -> io::Result<()> {
     let mut terminal = Terminal::new(backend)?;
     let mut app = app::App::new(args);
     let event_handler = event::EventHandler::new();
+
+    // ── Event Loop ──────────────────────────────────────────────────────────
 
     loop {
         terminal.draw(|f| ui::render(f, &app))?;

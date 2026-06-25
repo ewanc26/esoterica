@@ -18,6 +18,8 @@ pub fn init_panic_hook() {
     console_error_panic_hook::set_once();
 }
 
+// ── Word Generation ─────────────────────────────────────────────────────
+
 /// Generate a single word using the provided phonology.
 #[wasm_bindgen]
 pub fn generate_word(
@@ -39,6 +41,8 @@ pub fn generate_word(
     let result = serde_json::json!({ "word": word, "ipa": ipa });
     Ok(result.to_string())
 }
+
+// ── Lexicon Generation ──────────────────────────────────────────────────
 
 /// Generate a full lexicon with the provided configuration.
 /// Returns JSON string with all entries.
@@ -76,6 +80,8 @@ pub fn generate_lexicon(config_json: &str) -> Result<String, JsValue> {
     serde_json::to_string(lexicon).map_err(|e| JsValue::from_str(&e.to_string()))
 }
 
+// ── Semantic Drift ──────────────────────────────────────────────────────
+
 /// Apply semantic drift to an existing lexicon.
 #[wasm_bindgen]
 pub fn apply_semantic_drift(lexicon_json: &str, drift_rate: f64, time_steps: usize) -> Result<String, JsValue> {
@@ -85,6 +91,8 @@ pub fn apply_semantic_drift(lexicon_json: &str, drift_rate: f64, time_steps: usi
     let _history = engine.apply_to_lexicon(&mut lexicon);
     serde_json::to_string(&lexicon).map_err(|e| JsValue::from_str(&e.to_string()))
 }
+
+// ── Orthography ─────────────────────────────────────────────────────────
 
 /// Generate an orthography mapping for the given phoneme sets.
 #[wasm_bindgen]
@@ -114,6 +122,8 @@ pub fn generate_orthography(vowels_json: &str, consonants_json: &str, script_typ
     serde_json::to_string(&mapping).map_err(|e| JsValue::from_str(&e.to_string()))
 }
 
+// ── Syntax ──────────────────────────────────────────────────────────────
+
 /// Generate a sentence with the given word order.
 #[wasm_bindgen]
 pub fn generate_sentence(words_json: &str, word_order: &str, cases_json: &str) -> Result<String, JsValue> {
@@ -123,6 +133,8 @@ pub fn generate_sentence(words_json: &str, word_order: &str, cases_json: &str) -
     let engine = SyntaxEngine::new(syntax);
     Ok(engine.generate_sentence(&words))
 }
+
+// ── Sound Changes ──────────────────────────────────────────────────────
 
 /// Apply sound changes using formal rule notation (e.g. "p > b / V_V").
 #[wasm_bindgen]
@@ -146,6 +158,8 @@ pub fn parse_sound_rule(rule: &str) -> Result<String, JsValue> {
         Err(e) => Err(JsValue::from_str(&e)),
     }
 }
+
+// ── Preset Catalogues ───────────────────────────────────────────────────
 
 /// Get the available phonology presets.
 #[wasm_bindgen]

@@ -54,6 +54,8 @@ impl CollaborativeSession {
         }
     }
 
+    // ── Local Operations ────────────────────────────────────────────────────
+
     /// Record a local add/update to a word.
     pub fn local_add(&mut self, entry: crate::lexicon_structs::LexiconEntry) {
         let headword = entry.headword.clone();
@@ -71,6 +73,8 @@ impl CollaborativeSession {
         self.lexicon.0.insert(headword, entry);
         self.pending_changes.push(change);
     }
+
+    // ── Remote Merging ─────────────────────────────────────────────────────
 
     /// Record a local deletion.
     pub fn local_delete(&mut self, headword: &str) {
@@ -117,6 +121,8 @@ impl CollaborativeSession {
         self.change_log.push(change);
         true
     }
+
+    // ── Pending Changes & Conflict Detection ───────────────────────────────
 
     /// Get pending changes that should be published to ATProto.
     pub fn pending_changes(&self) -> &[LexiconChange] {

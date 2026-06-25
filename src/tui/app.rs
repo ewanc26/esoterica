@@ -1,3 +1,6 @@
+//! Application state and key handling for the Ratatui-based TUI.
+//! Routes key events between the config selector, phonology designer, and help overlay.
+
 use crate::archetypes::{self};
 use crate::lexicon::LexiconGenerator;
 use crate::args::Args;
@@ -7,6 +10,7 @@ use crate::phonology::PhonologyEngine;
 use crate::morphology::MorphologyEngine;
 use crate::syntax::SyntaxEngine;
 
+/// Top-level TUI application state.
 pub struct App {
     pub config: ConfigComponent,
     pub output: String,
@@ -28,18 +32,23 @@ impl App {
         }
     }
 
+    /// Route a key event to the active subsystem.
+    /// Returns false when the user requests quit.
     pub fn handle_key(&mut self, key: crossterm::event::KeyEvent) -> bool {
         use crossterm::event::KeyCode;
 
-        // If designer is active, route keys there
+        // ── Designer takes priority when active ──────────────────────────────
+
         if self.designer.active {
-            // Handle toggle before calling designer
+            // Space/Enter toggle the phoneme at the cursor
             if key.code == KeyCode::Char(' ') || key.code == KeyCode::Enter {
                 self.designer.toggle_phoneme_mut();
                 return true;
             }
             return self.designer.handle_key(key.code);
         }
+
+        // ── Main view keybindings ────────────────────────────────────────────
 
         match key.code {
             KeyCode::Char('q') => return false,
@@ -64,6 +73,9 @@ impl App {
 
     pub fn handle_mouse(&mut self, _mouse: crossterm::event::MouseEvent) {}
 
+    // ── Generation ──────────────────────────────────────────────────────────
+
+    /// Run the generation pipeline and populate the output display.
     fn generate(&mut self) {
         let (ph, mo, sy, sc_keys) = self.config.get_selected_values();
         let phono_reg = archetypes::get_phonology_registry();
@@ -102,6 +114,8 @@ impl App {
         let word2 = ph_engine.generate_word(1);
         let (word3, _) = mo_engine.apply_rules(&root3);
 
+        // ── Sentence Generation ──────────────────────────────────────────────
+
         let mut sentence_info = String::new();
         if let Some(syntax_cfg) = syntax_reg.get(&sy) {
             let syntax_engine = SyntaxEngine::new(syntax_cfg.clone());
@@ -122,6 +136,9 @@ impl App {
         self.generator = Some(gen);
     }
 
+    // ── Save ────────────────────────────────────────────────────────────────
+
+    /// Save the currently generated lexicon to disk.
     fn save_lexicon(&mut self) {
         if let Some(gen) = &self.generator {
             match gen.save_to_file("lexicon_output.json") {

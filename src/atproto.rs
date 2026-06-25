@@ -1,3 +1,7 @@
+//! ATProto publishing bindings for the Esoterica conlang generator.
+//! Publishes generated lexicons as `site.standard.document` records and
+//! manages `site.standard.publication` containers.
+
 use anyhow::{Result, Context, anyhow};
 use atrium_api::types::string::Datetime;
 use atrium_api::types::Unknown;
@@ -5,11 +9,13 @@ use atrium_api::types::string::AtIdentifier;
 use serde_json::json;
 use bsky_sdk::BskyAgent;
 
+/// Wraps a BskyAgent session for publishing conlang data to the AT Proto network.
 pub struct AtprotoPublisher { agent: BskyAgent }
 
 impl AtprotoPublisher {
     pub fn new(agent: BskyAgent) -> Self { Self { agent } }
 
+    /// List all existing publications in the user's repo.
     pub async fn list_publications(&self) -> Result<Vec<(String, String)>> {
         let session = self.agent.get_session().await.context("Not logged in")?;
         let output = self.agent.api.com.atproto.repo.list_records(

@@ -1,18 +1,12 @@
 use crossterm::event::{self, Event, KeyEvent, MouseEvent};
 use std::time::Duration;
 
-pub enum TuiEvent {
-    Key(KeyEvent),
-    Mouse(MouseEvent),
-}
+pub enum TuiEvent { Key(KeyEvent), Mouse(MouseEvent) }
 
 pub struct EventHandler;
 
 impl EventHandler {
-    pub fn new() -> Self {
-        Self
-    }
-
+    pub fn new() -> Self { Self }
     pub fn next(&self) -> std::io::Result<TuiEvent> {
         loop {
             if event::poll(Duration::from_millis(100))? {
@@ -26,8 +20,4 @@ impl EventHandler {
     }
 }
 
-impl Default for EventHandler {
-    fn default() -> Self {
-        Self::new()
-    }
-}
+impl Default for EventHandler { fn default() -> Self { Self::new() } }

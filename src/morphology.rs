@@ -23,8 +23,6 @@ impl MorphologyEngine {
                 MorphRule::Reduplication => word = format!("{}-{}", word, word),
             }
         }
-        
-        // Return word and randomly chosen noun class if available
         let noun_class = if let Some(classes) = &self.morphology.noun_classes {
             let mut rng = rand::thread_rng();
             classes.choose(&mut rng).cloned()

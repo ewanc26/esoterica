@@ -1,9 +1,76 @@
+# Legacy rule sets (simple pattern/replacement with optional context)
 none = []
 
 lenition = [
-    { pattern = "p", replacement = "b", context = "word_final" }
+    { pattern = "p", replacement = "b", context = "word_final" },
+    { pattern = "t", replacement = "d", context = "word_final" },
+    { pattern = "k", replacement = "g", context = "word_final" },
 ]
 
 spirantization = [
-    { pattern = "k", replacement = "h", context = "word_final" }
+    { pattern = "k", replacement = "h", context = "word_final" },
+    { pattern = "p", replacement = "f", context = "word_final" },
+    { pattern = "t", replacement = "s", context = "word_final" },
+]
+
+# Germanic-style consonant shift (Grimm's Law subset)
+grimms_law = [
+    { pattern = "p", replacement = "f" },
+    { pattern = "t", replacement = "th" },
+    { pattern = "k", replacement = "h" },
+]
+
+# Final obstruent devoicing (like German/Russian)
+final_devoicing = [
+    { pattern = "b", replacement = "p", context = "word_final" },
+    { pattern = "d", replacement = "t", context = "word_final" },
+    { pattern = "g", replacement = "k", context = "word_final" },
+    { pattern = "v", replacement = "f", context = "word_final" },
+    { pattern = "z", replacement = "s", context = "word_final" },
+]
+
+# Nasal place assimilation
+nasal_assimilation = [
+    { pattern = "n", replacement = "m", context = "word_final" },
+    { pattern = "np", replacement = "mp" },
+    { pattern = "nk", replacement = "ngk" },
+    { pattern = "nb", replacement = "mb" },
+]
+
+# Intervocalic voicing (lenition between vowels)
+intervocalic_voicing = [
+    { pattern = "p", replacement = "b" },
+    { pattern = "t", replacement = "d" },
+    { pattern = "k", replacement = "g" },
+    { pattern = "s", replacement = "z" },
+    { pattern = "f", replacement = "v" },
+]
+
+# Vowel reduction in unstressed positions
+vowel_reduction = [
+    { pattern = "a", replacement = "e", context = "word_final" },
+    { pattern = "o", replacement = "e", context = "word_final" },
+    { pattern = "u", replacement = "i", context = "word_final" },
+]
+
+# Palatalization before front vowels
+palatalization = [
+    { pattern = "k", replacement = "ch" },
+    { pattern = "g", replacement = "j" },
+    { pattern = "t", replacement = "ch" },
+    { pattern = "s", replacement = "sh" },
+]
+
+# Rhotacism (s > r between vowels, as in Latin/Germanic)
+rhotacism = [
+    { pattern = "s", replacement = "r" },
+    { pattern = "z", replacement = "r" },
+]
+
+# Cluster simplification
+cluster_simplification = [
+    { pattern = "pt", replacement = "t" },
+    { pattern = "kt", replacement = "t" },
+    { pattern = "mn", replacement = "n" },
+    { pattern = "mb", replacement = "m", context = "word_final" },
 ]

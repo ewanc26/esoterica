@@ -1,78 +1,95 @@
 # Esoterica Conlang Generator
 
-Esoterica is a modular, high-performance Rust framework for generating constructed languages (conlangs). It allows users to create consistent languages by composing independent linguistic components: phonology, morphology, and syntax.
+Esoterica is a modular, high-performance Rust framework for generating constructed languages (conlangs). It allows users to create consistent languages by composing independent linguistic components: phonology, morphology, syntax, sound changes, semantic drift, and orthography.
 
 ## Features
 
-- **Component-based Generation**: Dynamically mix-and-match phonological, morphological, and syntactic profiles to create diverse languages.
-- **Rule-based Synthesis**: 
-    - **Phonology Engine**: Generates syllables based on custom phonotactic patterns (e.g., `C(C)V(C)`) with support for tone and vowel harmony.
-    - **Morphology Engine**: Supports complex transformation rules including Suffix/Prefix/Infix insertion and Reduplication.
-    - **Sound Change Engine**: Simulates diachronic phonological shifts for historical consistency.
-- **CLI Interface**: Generate complex language packages directly from the command line.
-- **Interactive TUI**: Real-time conlang generation and configuration.
-- **ATProto Publication**: Publish generated lexicons directly to the ATProto network using `site.standard.document` schemas.
+- **Component-based Generation**: Dynamically mix-and-match phonological, morphological, syntactic, and sound-change profiles.
+- **Phonology Engine**: Generates syllables from phonotactic patterns (`C(C)V(C)`) with tone and vowel harmony support.
+- **Morphology Engine**: Suffix, prefix, infix insertion and reduplication rules.
+- **Sound Change Engine**: Legacy TOML-based rules + formal nom-based parser supporting notation like `p > b / V_V` and `k > h / _#`.
+- **Semantic Drift**: Probabilistic simulation of meaning change (broadening, narrowing, amelioration, pejoration, metaphor, metonymy, taboo replacement).
+- **Orthography Generator**: Procedural script generation for alphabets, abjads, abugidas, syllabaries, and logographies with configurable glyph styles.
+- **Collaborative Editing**: ATProto-based collaborative conlanging with merge conflict detection.
+- **CLI Interface**: Full command-line generation with semantic drift and orthography export.
+- **Interactive TUI**: Ratatui-based interface with phonology designer (IPA grid), config selector, and real-time generation.
+- **ATProto Publication**: Publish lexicons to the ATProto network.
+- **WASM Support**: Compile core engine to WebAssembly for web use.
+- **Svelte 5 Web Interface**: Browser-based phonology designer, lexicon browser, and sound change editor.
 
 ## Quick Start
 
-1. **Build the project:**
-   ```bash
-   cargo build --release
-   ```
+```bash
+# Build
+cargo build --release
 
-2. **Run in Interactive TUI Mode:**
-   ```bash
-   cargo run --release -- --interactive
-   ```
-   *Navigate with `Tab`, input configurations, and press `Enter` to generate.*
+# Interactive TUI
+cargo run --release -- --interactive
 
-3. **Generate via CLI:**
-   ```bash
-   cargo run --release -- --phonology uralic_finnic --morphology agglutinative --syntax svo --output my_language.json
-   ```
+# CLI generation
+cargo run --release -- \
+  --phonology uralic_finnic \
+  --morphology agglutinative \
+  --syntax sov \
+  --sound-change lenition,rhotacism \
+  --syllables 3 \
+  --drift-steps 3 \
+  --generate-orthography \
+  --output my_language.json
 
-## ATProto Publication
+# WASM
+wasm-pack build --features wasm --no-default-features
 
-To publish your generated lexicon to ATProto, you need to use an **App Password** (not your main account password).
-
-1. Get an App Password: https://bsky.app/settings/app-passwords
-2. Configure the following environment variables:
-   ```bash
-   export ATPROTO_HANDLE="your-handle.bsky.social"
-   export ATPROTO_PASSWORD="your-app-password"
-   ```
-3. Run the generator with the publication flag:
-   ```bash
-   cargo run --release -- \
-     --phonology uralic_finnic \
-     --morphology agglutinative \
-     --syntax svo \
-     --publish-title "My New Language" \
-     --publication-uri "at://did:plc:.../site.standard.publication/..."
-   ```
+# Web UI
+cd web && npm install && npm run dev
+```
 
 ## Project Structure
 
 ```
 esoterica/
 ├── src/
-│   ├── main.rs            # CLI and orchestration logic
-│   ├── archetypes.rs      # Registry of linguistic components
-│   ├── phonology.rs       # Syllable and word generation engine
-│   ├── morphology.rs      # Morphological transformation engine
-│   ├── sound_change.rs    # Diachronic sound change simulation
-│   ├── syntax.rs          # Word order management
-│   ├── lexicon.rs         # Dictionary generation and management
-│   ├── tui.rs             # Ratatui interactive interface
-│   └── atproto.rs         # ATProto publishing logic
-├── Cargo.toml             # Rust dependencies
-└── README.md              # Project documentation
+│   ├── lib.rs              # Library root
+│   ├── main.rs             # CLI binary
+│   ├── wasm.rs             # WASM bindings
+│   ├── archetypes.rs       # Linguistic component types + registry
+│   ├── phonology.rs        # Syllable/word generation engine
+│   ├── morphology.rs       # Morphological transformation engine
+│   ├── syntax.rs           # Word order management (6 orders)
+│   ├── sound_change.rs     # Nom-based formal rule parser + legacy engine
+│   ├── lexicon.rs          # Dictionary generation
+│   ├── lexicon_structs.rs  # Data structures
+│   ├── semantic_drift.rs   # Probabilistic meaning change simulation
+│   ├── orthography.rs      # Procedural script/glyph generator
+│   ├── collaborative.rs    # ATProto collaborative editing session
+│   ├── atproto.rs          # ATProto publishing logic
+│   └── tui/                # Ratatui interactive interface
+│       ├── mod.rs, app.rs, ui.rs, event.rs, components.rs
+│       └── phonology_designer.rs  # IPA grid phonology designer
+├── data/                   # TOML configuration files
+│   ├── phonologies.toml    # 8 language phoneme inventories
+│   ├── morphologies.toml   # 4 morphological type definitions
+│   ├── syntaxes.toml       # 3 word-order configurations
+│   └── sound_changes.toml  # 10 diachronic rule sets
+├── web/                    # Svelte 5 web interface
+│   └── src/lib/            # PhonologyDesigner, LexiconBrowser, SoundChangeEditor
+└── Cargo.toml              # Feature-gated (cli, wasm)
 ```
 
-## Contributing
+## ATProto Publication
 
-Contributions are welcome! Feel free to submit a pull request for new archetypes, morphological rules, or advanced features.
+```bash
+export ATPROTO_HANDLE="your-handle.bsky.social"
+export ATPROTO_PASSWORD="your-app-password"
+
+cargo run --release -- \
+  --phonology uralic_finnic \
+  --morphology agglutinative \
+  --syntax svo \
+  --publish-title "My Conlang" \
+  --publication-uri "at://did:plc:.../site.standard.publication/..."
+```
 
 ## License
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+MIT License. See [LICENSE](LICENSE) file for details.

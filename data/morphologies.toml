@@ -1,18 +1,26 @@
 [agglutinative]
 rules = [
-    { Suffix = "-en" },
-    { Suffix = "-is" }
+    { suffix = "-en" },
+    { suffix = "-is" }
 ]
 noun_classes = ["animate", "inanimate"]
 
 [fusional]
 rules = [
-    { Suffix = "-a" },
-    { Suffix = "-o" }
+    { suffix = "-a" },
+    { suffix = "-o" }
 ]
 noun_classes = ["masculine", "feminine", "neuter"]
 
 [analytic]
 rules = [
-    { Prefix = "pre-" }
+    { prefix = "pre-" }
 ]
+
+[polysynthetic]
+rules = [
+    { prefix = "ti-" },
+    { suffix = "-ya" },
+    { infix = "-ka-" }
+]
+noun_classes = ["animate", "inanimate", "abstract"]

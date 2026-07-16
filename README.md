@@ -9,11 +9,11 @@ Generates constructed languages from composable components: phonology, morpholog
 - **Sound changes** — TOML-based rules + formal parser (`p > b / V_V`)
 - **Semantic drift** — Probabilistic meaning change (broadening, narrowing, amelioration, pejoration, metaphor, etc.)
 - **Orthography** — Procedural script generation (alphabets, abjads, abugidas, syllabaries, logographies)
-- **Collaborative** — ATProto-based collaborative editing with merge conflict detection
+- **Collaborative** — AT Protocol-based collaborative editing with merge conflict detection
 - **CLI + TUI** — Ratatui interface with phonology designer, config selector, real-time generation
 - **WASM** — Core engine compiles to WebAssembly
 - **Web UI** — Svelte 5 frontend with phonology designer, lexicon browser, sound change editor
-- **ATProto** — Publish lexicons to the AT Protocol
+- **AT Protocol** — Publish lexicons to the AT Protocol
 
 ## Quick start
 
@@ -58,8 +58,8 @@ esoterica/
 │   ├── lexicon_structs.rs  # Data structures
 │   ├── semantic_drift.rs   # Probabilistic meaning change
 │   ├── orthography.rs      # Script/glyph generator
-│   ├── collaborative.rs    # ATProto collaborative editing
-│   ├── atproto.rs          # ATProto publishing
+│   ├── collaborative.rs    # AT Protocol collaborative editing
+│   ├── atproto.rs          # AT Protocol publishing
 │   └── tui/                # Ratatui interface
 ├── data/
 │   ├── phonologies.toml    # 8 phoneme inventories
@@ -70,7 +70,7 @@ esoterica/
 └── Cargo.toml
 ```
 
-## ATProto publication
+## AT Protocol publication
 
 ```bash
 export ATPROTO_HANDLE="your-handle.bsky.social"

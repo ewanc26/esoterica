@@ -1,4 +1,13 @@
 # Morphological profiles defining affixation patterns and noun class systems.
+#
+# Rules apply in order, each operating on the output of the last. Available
+# forms:
+#   { suffix = "-en" }               append to the stem
+#   { prefix = "ti-" }               prepend to the stem
+#   { infix = "-ka-" }               insert at the stem's character midpoint
+#   { circumfix = ["ge", "t"] }      wrap the stem on both sides
+#   "reduplication"                  double the stem: kai -> kai-kai
+#   { partial_reduplication = 2 }    copy the first N characters: taku -> ta-taku
 
 [agglutinative]
 # Concatenative suffixes, one morpheme per grammatical function (e.g. Turkish, Finnish)
@@ -22,6 +31,10 @@ rules = [
     { prefix = "pre-" }
 ]
 
+[isolating]
+# No affixation at all; every morpheme is a free word
+rules = []
+
 [polysynthetic]
 # Heavy affixation stacking, often incorporating multiple roots (e.g. Inuktitut)
 rules = [
@@ -30,3 +43,46 @@ rules = [
     { infix = "-ka-" }
 ]
 noun_classes = ["animate", "inanimate", "abstract"]
+
+[circumfixing]
+# Discontinuous affixes wrapping the stem (e.g. German ge-…-t, Malay ke-…-an)
+rules = [
+    { circumfix = ["ke", "an"] },
+    { suffix = "-i" }
+]
+noun_classes = ["concrete", "abstract"]
+
+[reduplicative]
+# Full reduplication for plurality or intensity (e.g. Malay, Tagalog)
+rules = [
+    "reduplication",
+    { suffix = "-nya" }
+]
+noun_classes = ["count", "mass"]
+
+[partial_reduplicative]
+# Copies a light syllable onto the stem (e.g. Tagalog aspect, Latin perfects)
+rules = [
+    { partial_reduplication = 2 },
+    { suffix = "-um" }
+]
+
+[templatic]
+# Root-and-pattern morphology approximated by an infix plus vowel-final suffix
+# (e.g. Semitic triconsonantal roots)
+rules = [
+    { infix = "a" },
+    { suffix = "-un" }
+]
+noun_classes = ["masculine", "feminine"]
+
+[noun_class_heavy]
+# Bantu-style concord: a class prefix on every noun and a nominal suffix
+rules = [
+    { prefix = "mu-" },
+    { suffix = "-ni" }
+]
+noun_classes = [
+    "human_sg", "human_pl", "tree_sg", "tree_pl", "thing_sg", "thing_pl",
+    "abstract", "place", "diminutive", "augmentative"
+]

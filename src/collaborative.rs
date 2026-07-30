@@ -131,7 +131,7 @@ impl CollaborativeSession {
 
     /// Mark all pending changes as published.
     pub fn flush_pending(&mut self) {
-        self.change_log.extend(self.pending_changes.drain(..));
+        self.change_log.append(&mut self.pending_changes);
     }
 
     /// Check for merge conflicts between local and remote changes.
@@ -226,7 +226,7 @@ fn is_leap(year: i64) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::lexicon_structs::{Lexicon, LexiconEntry, Sense, Citation};
+    use crate::lexicon_structs::{Lexicon, LexiconEntry, Sense};
 
     fn make_entry(word: &str) -> LexiconEntry {
         LexiconEntry {
@@ -238,14 +238,14 @@ mod tests {
     }
 
     #[test] fn test_local_add() {
-        let mut session = CollaborativeSession::new(Lexicon(HashMap::new()), "did:plc:alice".into());
+        let mut session = CollaborativeSession::new(Lexicon::new(), "did:plc:alice".into());
         session.local_add(make_entry("fire"));
         assert_eq!(session.lexicon.0.len(), 1);
         assert_eq!(session.pending_changes().len(), 1);
     }
 
     #[test] fn test_local_delete() {
-        let mut lex = Lexicon(HashMap::new());
+        let mut lex = Lexicon::new();
         lex.0.insert("fire".into(), make_entry("fire"));
         let mut session = CollaborativeSession::new(lex, "did:plc:alice".into());
         session.local_delete("fire");
@@ -253,7 +253,7 @@ mod tests {
     }
 
     #[test] fn test_merge_remote() {
-        let mut session = CollaborativeSession::new(Lexicon(HashMap::new()), "did:plc:alice".into());
+        let mut session = CollaborativeSession::new(Lexicon::new(), "did:plc:alice".into());
         let change = LexiconChange {
             author: "did:plc:bob".into(),
             headword: "water".into(),
@@ -267,7 +267,7 @@ mod tests {
     }
 
     #[test] fn test_ignore_own_changes() {
-        let mut session = CollaborativeSession::new(Lexicon(HashMap::new()), "did:plc:alice".into());
+        let mut session = CollaborativeSession::new(Lexicon::new(), "did:plc:alice".into());
         let change = LexiconChange {
             author: "did:plc:alice".into(),
             headword: "test".into(),
@@ -280,7 +280,7 @@ mod tests {
     }
 
     #[test] fn test_conflict_detection() {
-        let mut session = CollaborativeSession::new(Lexicon(HashMap::new()), "did:plc:alice".into());
+        let mut session = CollaborativeSession::new(Lexicon::new(), "did:plc:alice".into());
         session.local_add(make_entry("sky"));
         let remote = LexiconChange {
             author: "did:plc:carol".into(),
@@ -296,7 +296,7 @@ mod tests {
     }
 
     #[test] fn test_summary() {
-        let mut session = CollaborativeSession::new(Lexicon(HashMap::new()), "did:plc:alice".into());
+        let mut session = CollaborativeSession::new(Lexicon::new(), "did:plc:alice".into());
         session.local_add(make_entry("sun"));
         session.local_add(make_entry("moon"));
         let summary = session.summary();

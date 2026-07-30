@@ -1,12 +1,17 @@
 //! Procedural orthography/script generator for conlangs.
 //! Generates writing system mappings: phonemes → visual glyphs.
 //! Supports different script types and glyph aesthetics.
+//!
+//! Glyph paths are random shapes in the chosen style, not designed letterforms.
+//! Build the engine with [`OrthographyEngine::seeded`] to get the same script
+//! back on every run.
 
 use crate::archetypes::Phonology;
-use rand::Rng;
+use crate::rng::SharedRng;
 use rand::seq::SliceRandom;
+use rand::Rng;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 /// Type of writing system to generate.
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
@@ -52,18 +57,42 @@ pub struct Glyph {
 pub struct OrthographyEngine {
     script_type: ScriptType,
     style: GlyphStyle,
+    rng: SharedRng,
 }
 
 impl OrthographyEngine {
+    /// Build an engine seeded from system entropy.
     pub fn new(script_type: ScriptType, style: GlyphStyle) -> Self {
-        Self { script_type, style }
+        Self { script_type, style, rng: SharedRng::from_entropy() }
+    }
+
+    /// Build a reproducible engine: the same seed, script type, style, and
+    /// phonology always produce the same glyph set.
+    pub fn seeded(script_type: ScriptType, style: GlyphStyle, seed: u64) -> Self {
+        Self { script_type, style, rng: SharedRng::from_seed(seed) }
+    }
+
+    /// The script type this engine generates.
+    pub fn script_type(&self) -> ScriptType {
+        self.script_type
+    }
+
+    /// The glyph style this engine generates.
+    pub fn style(&self) -> GlyphStyle {
+        self.style
     }
 
     /// Generate a complete orthography mapping for the given phonology.
     /// Returns a mapping of phoneme/glyph-key → Glyph.
-    pub fn generate(&mut self, phonology: Phonology) -> HashMap<String, Glyph> {
-        let mut mapping = HashMap::new();
-        let mut rng = rand::thread_rng();
+    ///
+    /// Ordered by key so a seeded run serialises to the same bytes every time.
+    pub fn generate(&self, phonology: Phonology) -> BTreeMap<String, Glyph> {
+        self.rng.with(|rng| self.generate_with(&phonology, rng))
+    }
+
+    fn generate_with(&self, phonology: &Phonology, rng: &mut impl Rng) -> BTreeMap<String, Glyph> {
+        let mut mapping = BTreeMap::new();
+        let mut rng = rng;
 
         match self.script_type {
             ScriptType::Alphabet => {
@@ -108,7 +137,7 @@ impl OrthographyEngine {
             }
             ScriptType::Syllabary => {
                 // Generate glyphs for common syllable patterns
-                let patterns = self.generate_syllable_patterns(&phonology);
+                let patterns = self.generate_syllable_patterns(phonology);
                 for pattern in &patterns {
                     let glyph = self.generate_glyph(pattern, "syllable", &mut rng);
                     mapping.insert(pattern.clone(), glyph);
@@ -227,13 +256,13 @@ impl OrthographyEngine {
 
     fn generate_minimal_path(&self, rng: &mut impl Rng) -> String {
         let shapes = [
-            format!("M5,15 L25,15"),
-            format!("M15,5 L15,25"),
-            format!("M10,10 L20,20"),
-            format!("M5,5 L25,5 L25,25 L5,25 Z"),
-            format!("M5,10 L25,10 M15,10 L15,20"),
+            "M5,15 L25,15",
+            "M15,5 L15,25",
+            "M10,10 L20,20",
+            "M5,5 L25,5 L25,25 L5,25 Z",
+            "M5,10 L25,10 M15,10 L15,20",
         ];
-        shapes.choose(rng).unwrap().clone()
+        shapes.choose(rng).unwrap().to_string()
     }
 
     fn generate_ornate_path(&self, rng: &mut impl Rng) -> String {
@@ -321,8 +350,33 @@ mod tests {
         }
     }
 
+    const ALL_SCRIPTS: [ScriptType; 5] = [
+        ScriptType::Alphabet,
+        ScriptType::Abjad,
+        ScriptType::Abugida,
+        ScriptType::Syllabary,
+        ScriptType::Logography,
+    ];
+
+    const ALL_STYLES: [GlyphStyle; 4] = [
+        GlyphStyle::Angular,
+        GlyphStyle::Curved,
+        GlyphStyle::Minimal,
+        GlyphStyle::Ornate,
+    ];
+
+    /// Mapping content in a stable order, for comparing two runs.
+    fn fingerprint(mapping: &BTreeMap<String, Glyph>) -> Vec<(String, String)> {
+        let mut pairs: Vec<(String, String)> = mapping
+            .iter()
+            .map(|(k, g)| (k.clone(), g.svg_path.clone()))
+            .collect();
+        pairs.sort();
+        pairs
+    }
+
     #[test] fn test_alphabet_generation() {
-        let mut engine = OrthographyEngine::new(ScriptType::Alphabet, GlyphStyle::Angular);
+        let engine = OrthographyEngine::new(ScriptType::Alphabet, GlyphStyle::Angular);
         let mapping = engine.generate(make_phono());
         assert!(mapping.len() >= 8); // 5 consonants + 3 vowels
         for (phoneme, glyph) in &mapping {
@@ -332,7 +386,7 @@ mod tests {
     }
 
     #[test] fn test_abjad_generation() {
-        let mut engine = OrthographyEngine::new(ScriptType::Abjad, GlyphStyle::Curved);
+        let engine = OrthographyEngine::new(ScriptType::Abjad, GlyphStyle::Curved);
         let mapping = engine.generate(make_phono());
         assert!(mapping.len() >= 8);
         // Vowels should be diacritics
@@ -342,24 +396,107 @@ mod tests {
     }
 
     #[test] fn test_syllabary_generation() {
-        let mut engine = OrthographyEngine::new(ScriptType::Syllabary, GlyphStyle::Minimal);
+        let engine = OrthographyEngine::new(ScriptType::Syllabary, GlyphStyle::Minimal);
         let mapping = engine.generate(make_phono());
         // 5*3 = 15 syllable glyphs + individual phonemes
         assert!(mapping.len() >= 15);
     }
 
     #[test] fn test_logography_generation() {
-        let mut engine = OrthographyEngine::new(ScriptType::Logography, GlyphStyle::Ornate);
+        let engine = OrthographyEngine::new(ScriptType::Logography, GlyphStyle::Ornate);
         let mapping = engine.generate(make_phono());
         // 50 core logograms + phonetic glyphs
         assert!(mapping.len() >= 50);
     }
 
     #[test] fn test_all_styles() {
-        for style in &[GlyphStyle::Angular, GlyphStyle::Curved, GlyphStyle::Minimal, GlyphStyle::Ornate] {
-            let mut engine = OrthographyEngine::new(ScriptType::Alphabet, *style);
-            let mapping = engine.generate(make_phono());
-            assert!(!mapping.is_empty());
+        for style in ALL_STYLES {
+            let engine = OrthographyEngine::new(ScriptType::Alphabet, style);
+            assert!(!engine.generate(make_phono()).is_empty());
         }
+    }
+
+    // ── Determinism ──────────────────────────────────────────────────────
+
+    #[test] fn same_seed_produces_the_same_script() {
+        for script in ALL_SCRIPTS {
+            for style in ALL_STYLES {
+                let a = OrthographyEngine::seeded(script, style, 4321);
+                let b = OrthographyEngine::seeded(script, style, 4321);
+                assert_eq!(
+                    fingerprint(&a.generate(make_phono())),
+                    fingerprint(&b.generate(make_phono())),
+                    "{:?}/{:?} was not reproducible",
+                    script,
+                    style
+                );
+            }
+        }
+    }
+
+    #[test] fn different_seeds_produce_different_scripts() {
+        let a = OrthographyEngine::seeded(ScriptType::Alphabet, GlyphStyle::Ornate, 1);
+        let b = OrthographyEngine::seeded(ScriptType::Alphabet, GlyphStyle::Ornate, 2);
+        assert_ne!(
+            fingerprint(&a.generate(make_phono())),
+            fingerprint(&b.generate(make_phono()))
+        );
+    }
+
+    #[test] fn repeated_generation_advances_the_stream() {
+        // Two calls on one engine are independent draws, not a repeat.
+        let engine = OrthographyEngine::seeded(ScriptType::Alphabet, GlyphStyle::Ornate, 7);
+        assert_ne!(
+            fingerprint(&engine.generate(make_phono())),
+            fingerprint(&engine.generate(make_phono()))
+        );
+    }
+
+    // ── Robustness ───────────────────────────────────────────────────────
+
+    #[test] fn every_glyph_has_a_path_and_category() {
+        for script in ALL_SCRIPTS {
+            let engine = OrthographyEngine::seeded(script, GlyphStyle::Angular, 11);
+            for (key, glyph) in engine.generate(make_phono()) {
+                assert!(!glyph.svg_path.is_empty(), "{} has no path", key);
+                assert!(!glyph.category.is_empty(), "{} has no category", key);
+                assert!(!glyph.description.is_empty(), "{} has no description", key);
+            }
+        }
+    }
+
+    #[test] fn empty_inventories_produce_no_phoneme_glyphs() {
+        let empty = Phonology {
+            vowels: vec![],
+            consonants: vec![],
+            syllable_structure: "CV".to_string(),
+            tones: None,
+            vowel_harmony: None,
+        };
+        let engine = OrthographyEngine::seeded(ScriptType::Alphabet, GlyphStyle::Minimal, 1);
+        assert!(engine.generate(empty).is_empty());
+    }
+
+    #[test] fn logography_still_works_without_phonemes() {
+        let empty = Phonology {
+            vowels: vec![],
+            consonants: vec![],
+            syllable_structure: "CV".to_string(),
+            tones: None,
+            vowel_harmony: None,
+        };
+        let engine = OrthographyEngine::seeded(ScriptType::Logography, GlyphStyle::Curved, 1);
+        // The logogram set is concept-based, so it survives an empty inventory.
+        assert!(engine.generate(empty).len() >= 50);
+    }
+
+    #[test] fn multigraph_phonemes_get_their_own_glyphs() {
+        let mut phono = make_phono();
+        phono.consonants.push("ng".to_string());
+        phono.consonants.push("kw".to_string());
+        let engine = OrthographyEngine::seeded(ScriptType::Alphabet, GlyphStyle::Angular, 2);
+        let mapping = engine.generate(phono);
+        assert!(mapping.contains_key("ng"));
+        assert!(mapping.contains_key("kw"));
     }
 }

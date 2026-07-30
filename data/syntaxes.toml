@@ -1,17 +1,82 @@
 # Word order and case system configurations.
 # Each entry specifies one of the six major word orders and its associated case system.
+#
+# `cases` supplies the subject marker first and the object marker second; a
+# preset with no `cases` key generates unmarked forms.
+#
+# `adposition` (preposition | postposition) and `adjective_order`
+# (prenominal | postnominal) are optional. When omitted they are inferred from
+# the word order's head direction: verb-final orders take postpositions and
+# prenominal adjectives, verb-medial and verb-initial orders the reverse.
 
 [svo]
 # Subject-Verb-Object (English, Chinese, Romance)
 word_order = "SVO"
 cases = ["nominative", "accusative"]
-
-[vso]
-# Verb-Subject-Object (Irish, Welsh, Maori)
-word_order = "VSO"
-cases = ["nominative", "ergative"]
+adposition = "preposition"
+adjective_order = "prenominal"
 
 [sov]
-# Subject-Object-Verb (Japanese, Turkish, Korean)
+# Subject-Object-Verb (Japanese, Turkish, Korean) — the most common order
+word_order = "SOV"
+cases = ["nominative", "accusative"]
+adposition = "postposition"
+adjective_order = "prenominal"
+
+[vso]
+# Verb-Subject-Object (Irish, Welsh, Classical Arabic)
+word_order = "VSO"
+cases = ["nominative", "accusative"]
+adposition = "preposition"
+adjective_order = "postnominal"
+
+[vos]
+# Verb-Object-Subject (Malagasy, Fijian, Car Nicobarese)
+word_order = "VOS"
+cases = ["nominative", "accusative"]
+adposition = "preposition"
+adjective_order = "postnominal"
+
+[ovs]
+# Object-Verb-Subject (Hixkaryana and a handful of Amazonian languages)
+word_order = "OVS"
+cases = ["nominative", "accusative"]
+adposition = "postposition"
+adjective_order = "postnominal"
+
+[osv]
+# Object-Subject-Verb (Warao, Tobati) — the rarest attested order
+word_order = "OSV"
+cases = ["nominative", "accusative"]
+adposition = "postposition"
+adjective_order = "prenominal"
+
+# ── Alignment variants ───────────────────────────────────────────────────
+# The same constituent orders paired with other alignments and case systems.
+
+[sov_ergative]
+# Ergative-absolutive alignment (Basque, Georgian, Dyirbal)
+word_order = "SOV"
+cases = ["ergative", "absolutive"]
+adposition = "postposition"
+adjective_order = "prenominal"
+
+[vso_ergative]
+# Verb-initial with ergative alignment (Mayan languages)
+word_order = "VSO"
+cases = ["ergative", "absolutive"]
+adposition = "preposition"
+adjective_order = "prenominal"
+
+[sov_dative]
+# Verb-final with a dative-marked object, as in experiencer constructions
 word_order = "SOV"
 cases = ["nominative", "dative"]
+adposition = "postposition"
+adjective_order = "prenominal"
+
+[svo_isolating]
+# No case morphology at all; word order alone carries grammatical relations
+word_order = "SVO"
+adposition = "preposition"
+adjective_order = "prenominal"

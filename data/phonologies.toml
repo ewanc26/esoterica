@@ -1,5 +1,10 @@
 # Phoneme inventories organised by language family/area.
 # Each entry defines vowels, consonants, syllable structure, tone, and vowel harmony.
+#
+# `syllable_structure` is a template where C is a consonant slot and V a vowel
+# slot; every slot is filled, so "CCCVCCCC" always produces a maximal cluster.
+# `tones` is the number of level tones (1-5); `vowel_harmony` alternates
+# back/front vowel pairs such as a/ä, o/ö, and u/y across a word.
 
 [eurasia_ie_germanic]
 # Indo-European, Germanic branch — large consonant clusters (CCCVCCCC)
@@ -13,6 +18,13 @@ vowel_harmony = false
 vowels = ["a", "e", "i", "o", "u"]
 consonants = ["p", "b", "t", "d", "k", "g", "f", "v", "s", "z", "m", "n", "r", "l"]
 syllable_structure = "CV"
+vowel_harmony = false
+
+[eurasia_ie_slavic]
+# Indo-European, Slavic branch — palatal series and heavy onset clusters
+vowels = ["a", "e", "i", "o", "u", "y"]
+consonants = ["p", "b", "t", "d", "k", "g", "f", "v", "s", "z", "sh", "zh", "ch", "ts", "m", "n", "r", "l", "j"]
+syllable_structure = "CCVC"
 vowel_harmony = false
 
 [africa_afroasiatic_semitic]
@@ -29,12 +41,35 @@ consonants = ["p", "b", "t", "d", "k", "g", "m", "n", "s", "z"]
 syllable_structure = "CV"
 vowel_harmony = true
 
+[africa_khoisan]
+# Khoisan-style — click consonants alongside a five-vowel system
+vowels = ["a", "e", "i", "o", "u"]
+consonants = ["p", "t", "k", "kh", "s", "m", "n", "ng", "l", "'", "q", "ts"]
+syllable_structure = "CVC"
+vowel_harmony = false
+
 [asia_sinotibetan_sinitic]
 # Sino-Tibetan, Sinitic branch — tonal, limited syllable codas
 vowels = ["a", "e", "i", "o", "u"]
 consonants = ["p", "t", "k", "s", "h", "m", "n", "ng", "l"]
 syllable_structure = "CV"
 tones = 4
+vowel_harmony = false
+
+[asia_taikadai]
+# Tai-Kadai style — a dense five-level tone system over CVC syllables
+vowels = ["a", "e", "i", "o", "u"]
+consonants = ["p", "b", "t", "d", "k", "h", "m", "n", "ng", "l", "r", "j", "w"]
+syllable_structure = "CVC"
+tones = 5
+vowel_harmony = false
+
+[asia_japonic]
+# Japonic style — strictly open syllables and a small five-vowel inventory
+vowels = ["a", "e", "i", "o", "u"]
+consonants = ["k", "g", "s", "z", "t", "d", "n", "h", "b", "p", "m", "r", "w", "j"]
+syllable_structure = "CV"
+tones = 2
 vowel_harmony = false
 
 [americas_utoaztecan]
@@ -44,10 +79,24 @@ consonants = ["p", "t", "k", "kw", "s", "h", "m", "n", "w", "j"]
 syllable_structure = "CVC"
 vowel_harmony = true
 
+[americas_salishan]
+# Salishan style — long obstruent clusters and a minimal vowel system
+vowels = ["a", "i", "u"]
+consonants = ["p", "t", "k", "q", "ts", "s", "sh", "x", "kh", "m", "n", "l", "w", "j", "'"]
+syllable_structure = "CCVCC"
+vowel_harmony = false
+
 [oceania_austronesian]
 # Austronesian — small inventories, open syllables
 vowels = ["a", "i", "u"]
 consonants = ["p", "t", "k", "s", "h", "m", "n", "ng", "l", "r"]
+syllable_structure = "CV"
+vowel_harmony = false
+
+[oceania_polynesian]
+# Polynesian — the smallest common inventories, obligatory open syllables
+vowels = ["a", "e", "i", "o", "u"]
+consonants = ["p", "t", "k", "m", "n", "ng", "f", "h", "l", "'"]
 syllable_structure = "CV"
 vowel_harmony = false
 
@@ -57,3 +106,17 @@ vowels = ["a", "e", "i", "o", "u", "ä", "ö", "y"]
 consonants = ["p", "t", "k", "s", "h", "m", "n", "r", "l", "v", "j"]
 syllable_structure = "CVC"
 vowel_harmony = true
+
+[altaic_turkic]
+# Turkic style — thoroughgoing front/back harmony over CVC syllables
+vowels = ["a", "e", "i", "o", "u", "ö", "ü", "y"]
+consonants = ["b", "p", "t", "d", "k", "g", "s", "z", "sh", "ch", "m", "n", "r", "l", "j", "v"]
+syllable_structure = "CVC"
+vowel_harmony = true
+
+[caucasus_northwest]
+# Northwest Caucasian style — a very large consonant inventory over two vowels
+vowels = ["a", "e"]
+consonants = ["p", "b", "t", "d", "k", "g", "q", "ts", "dz", "ch", "s", "z", "sh", "zh", "x", "gh", "h", "m", "n", "r", "l", "w", "j", "kw", "gw", "'"]
+syllable_structure = "CVC"
+vowel_harmony = false

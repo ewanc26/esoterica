@@ -1,7 +1,14 @@
 # Legacy rule sets for the sound change engine.
-# Each set is an array of { pattern, replacement, context } objects.
-# Context can be "word_initial", "word_final", or omitted for unconditional replacement.
-# For the formal parser (p > b / V_V), use the API in sound_change.rs instead.
+# Each set is an array of { pattern, replacement, context } objects applied in
+# order, each to the output of the last.
+#
+# Context can be "word_initial", "word_final", or omitted for unconditional
+# replacement. These rules are plain substring rewrites — for environments like
+# "between vowels" or "before a front vowel", use the formal notation parser in
+# sound_change.rs (`p > b / V_V`), reachable from the CLI via --formal-rule.
+#
+# Multiple sets can be combined on the command line; they apply left to right,
+# so ordering matters exactly as it does in historical linguistics.
 
 none = []
 
@@ -24,6 +31,14 @@ grimms_law = [
     { pattern = "p", replacement = "f" },
     { pattern = "t", replacement = "th" },
     { pattern = "k", replacement = "h" },
+]
+
+# Second (High German) consonant shift, applied after Grimm's Law
+high_german_shift = [
+    { pattern = "t", replacement = "ts", context = "word_initial" },
+    { pattern = "p", replacement = "pf", context = "word_initial" },
+    { pattern = "k", replacement = "kh", context = "word_initial" },
+    { pattern = "d", replacement = "t" },
 ]
 
 # Final obstruent devoicing (like German/Russian)
@@ -59,6 +74,15 @@ vowel_reduction = [
     { pattern = "u", replacement = "i", context = "word_final" },
 ]
 
+# Loss of final vowels entirely (apocope), as in the history of English
+apocope = [
+    { pattern = "a", replacement = "", context = "word_final" },
+    { pattern = "e", replacement = "", context = "word_final" },
+    { pattern = "i", replacement = "", context = "word_final" },
+    { pattern = "o", replacement = "", context = "word_final" },
+    { pattern = "u", replacement = "", context = "word_final" },
+]
+
 # Palatalization before front vowels
 palatalization = [
     { pattern = "k", replacement = "ch" },
@@ -73,10 +97,53 @@ rhotacism = [
     { pattern = "z", replacement = "r" },
 ]
 
+# Lambdacism — the mirror image, merging the rhotic into a lateral
+lambdacism = [
+    { pattern = "r", replacement = "l" },
+]
+
 # Cluster simplification
 cluster_simplification = [
     { pattern = "pt", replacement = "t" },
     { pattern = "kt", replacement = "t" },
     { pattern = "mn", replacement = "n" },
     { pattern = "mb", replacement = "m", context = "word_final" },
+]
+
+# Debuccalisation — obstruents weaken all the way to [h], as in Greek and Spanish
+debuccalization = [
+    { pattern = "s", replacement = "h", context = "word_final" },
+    { pattern = "f", replacement = "h", context = "word_initial" },
+    { pattern = "th", replacement = "h" },
+]
+
+# Loss of initial consonants (aphaeresis), leaving vowel-initial words
+initial_cluster_loss = [
+    { pattern = "kn", replacement = "n", context = "word_initial" },
+    { pattern = "gn", replacement = "n", context = "word_initial" },
+    { pattern = "wr", replacement = "r", context = "word_initial" },
+    { pattern = "hl", replacement = "l", context = "word_initial" },
+]
+
+# Epenthesis — a vowel breaks up awkward clusters, as in Spanish escuela
+vowel_epenthesis = [
+    { pattern = "sp", replacement = "esp", context = "word_initial" },
+    { pattern = "st", replacement = "est", context = "word_initial" },
+    { pattern = "sk", replacement = "esk", context = "word_initial" },
+]
+
+# Monophthongisation of common falling diphthongs
+monophthongization = [
+    { pattern = "ai", replacement = "e" },
+    { pattern = "au", replacement = "o" },
+    { pattern = "ei", replacement = "i" },
+    { pattern = "ou", replacement = "u" },
+]
+
+# Nasalisation of vowels before a lost nasal, as in French
+nasalization = [
+    { pattern = "an", replacement = "ã", context = "word_final" },
+    { pattern = "en", replacement = "ẽ", context = "word_final" },
+    { pattern = "on", replacement = "õ", context = "word_final" },
+    { pattern = "in", replacement = "ĩ", context = "word_final" },
 ]

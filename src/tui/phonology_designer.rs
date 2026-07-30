@@ -58,6 +58,12 @@ pub struct PhonologyDesigner {
     pub confirmed_phonology: Option<Phonology>,
 }
 
+impl Default for PhonologyDesigner {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl PhonologyDesigner {
     pub fn new() -> Self {
         // Default: a basic phonology preset

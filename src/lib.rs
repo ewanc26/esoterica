@@ -5,6 +5,8 @@
 //! the `cli` feature. For WebAssembly, use the `wasm` feature.
 
 pub mod archetypes;
+pub mod ipa;
+pub mod rng;
 pub mod phonology;
 pub mod morphology;
 pub mod lexicon;

@@ -18,10 +18,12 @@ pub struct App {
     pub help: HelpComponent,
     pub show_help: bool,
     pub designer: PhonologyDesigner,
+    /// CLI arguments the TUI honours: seed, lexicon size, syllable count, output path.
+    args: Args,
 }
 
 impl App {
-    pub fn new(_args: Args) -> Self {
+    pub fn new(args: Args) -> Self {
         Self {
             config: ConfigComponent::new(),
             output: String::new(),
@@ -29,7 +31,17 @@ impl App {
             help: HelpComponent,
             show_help: false,
             designer: PhonologyDesigner::new(),
+            args,
         }
+    }
+
+    /// Where `s` writes the lexicon, honouring `--output`.
+    fn output_path(&self) -> String {
+        self.args
+            .output
+            .as_ref()
+            .map(|p| p.display().to_string())
+            .unwrap_or_else(|| "lexicon_output.json".to_string())
     }
 
     /// Route a key event to the active subsystem.
@@ -105,8 +117,17 @@ impl App {
             }
         }
 
-        let ph_engine = PhonologyEngine::new(ph_cfg.clone());
-        let mo_engine = MorphologyEngine::new(mo_cfg.clone());
+        // A seed makes the previewed words and the saved lexicon reproducible.
+        let (ph_engine, mo_engine) = match self.args.seed {
+            Some(seed) => (
+                PhonologyEngine::seeded(ph_cfg.clone(), seed),
+                MorphologyEngine::seeded(mo_cfg.clone(), seed.wrapping_add(0x9E37_79B9)),
+            ),
+            None => (
+                PhonologyEngine::new(ph_cfg.clone()),
+                MorphologyEngine::new(mo_cfg.clone()),
+            ),
+        };
 
         let root1 = ph_engine.generate_word(2);
         let root3 = ph_engine.generate_word(2);
@@ -131,18 +152,37 @@ impl App {
             ph, custom_label, mo, sy, sc_keys, word1, word2, word3, sentence_info
         );
 
-        let mut gen = LexiconGenerator::new(ph_cfg, mo_cfg, sound_changes);
-        gen.generate_core_lexicon(100);
-        self.generator = Some(gen);
+        let mut generator = match LexiconGenerator::try_new(
+            ph_cfg,
+            mo_cfg,
+            sound_changes,
+            self.args.seed,
+        ) {
+            Ok(generator) => generator.with_syllables(self.args.syllables.unwrap_or(2)),
+            Err(e) => {
+                self.output = format!("Error: {}", e);
+                return;
+            }
+        };
+        let size = self.args.lexicon_size.unwrap_or(100);
+        let produced = generator.generate_core_lexicon(size).len();
+        if produced < size {
+            self.output.push_str(&format!(
+                "\nOnly {} of {} entries: this phonology has too few distinct forms.",
+                produced, size
+            ));
+        }
+        self.generator = Some(generator);
     }
 
     // ── Save ────────────────────────────────────────────────────────────────
 
     /// Save the currently generated lexicon to disk.
     fn save_lexicon(&mut self) {
-        if let Some(gen) = &self.generator {
-            match gen.save_to_file("lexicon_output.json") {
-                Ok(_) => self.output = format!("{}\n\nLexicon saved to lexicon_output.json", self.output),
+        if let Some(generator) = &self.generator {
+            let path = self.output_path();
+            match generator.save_to_file(&path) {
+                Ok(_) => self.output = format!("{}\n\nLexicon saved to {}", self.output, path),
                 Err(e) => self.output = format!("Error saving: {}", e),
             }
         } else {

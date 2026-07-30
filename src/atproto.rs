@@ -59,7 +59,7 @@ impl AtprotoPublisher {
         Ok(output.data.uri)
     }
 
-    pub async fn publish_dictionary(&self, lexicon: &std::collections::HashMap<String, crate::lexicon_structs::LexiconEntry>, title: &str, publication_uri: &str) -> Result<String> {
+    pub async fn publish_dictionary(&self, lexicon: &std::collections::BTreeMap<String, crate::lexicon_structs::LexiconEntry>, title: &str, publication_uri: &str) -> Result<String> {
         let content = serde_json::to_string_pretty(lexicon)?;
         let record = json!({
             "$type": "site.standard.document",

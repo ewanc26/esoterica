@@ -1,6 +1,6 @@
 # Esoterica — modular conlang generation framework
 # Build: cargo build --release
-# WASM:  wasm-pack build --features wasm --no-default-features
+# WASM:  wasm-pack build --target web --no-default-features --features wasm
 
 [package]
 name = "esoterica"
@@ -9,6 +9,12 @@ edition = "2021"
 
 [lib]
 crate-type = ["lib", "cdylib"]
+
+# wasm-pack downloads a binaryen release to run wasm-opt, which fails without
+# network access. The build is the same either way, just larger; run
+# `wasm-opt -Oz pkg/esoterica_bg.wasm -o pkg/esoterica_bg.wasm` when shipping.
+[package.metadata.wasm-pack.profile.release]
+wasm-opt = false
 
 [[bin]]
 name = "esoterica"

@@ -2,6 +2,13 @@
 /target
 **/*.rs.bk
 
+# wasm-pack output (regenerate with `npm run wasm` from web/)
+/pkg
+
+# Web build artefacts
+/web/node_modules
+/web/dist
+
 # OS ignore rules
 .DS_Store
 

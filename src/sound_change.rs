@@ -37,12 +37,20 @@ impl FormalRule {
     /// Trailing input is rejected, so a malformed environment such as
     /// `p > b / V_V_V` is an error rather than a silently truncated rule.
     pub fn parse(input: &str) -> Result<Self, String> {
-        let (rest, rule) = parse_formal_rule(input.trim())
-            .map_err(|e| format!("Failed to parse rule '{}': {:?}", input, e))?;
+        // nom's own Debug output leaks combinator names at the user, so the
+        // failure is reported in terms of the rule syntax instead.
+        let (rest, rule) = parse_formal_rule(input.trim()).map_err(|_| {
+            format!(
+                "Could not parse '{}'. Expected 'from > to' or 'from > to / left_right', \
+                 for example 'p > b / V_V'.",
+                input.trim()
+            )
+        })?;
         if !rest.trim().is_empty() {
             return Err(format!(
-                "Failed to parse rule '{}': unexpected trailing input '{}'",
-                input,
+                "Could not parse '{}': unexpected trailing input '{}'. \
+                 A rule takes one segment on each side of the environment.",
+                input.trim(),
                 rest.trim()
             ));
         }

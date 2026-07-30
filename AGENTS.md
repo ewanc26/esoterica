@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Guidance for agents working on Esoterica, a Rust conlang-generation library with CLI/TUI, optional WASM bindings, a prototype web UI, and AT Protocol publication helpers.
+Guidance for agents working on Esoterica, a Rust conlang-generation library with CLI/TUI, optional WASM bindings, a WASM-backed web UI, and AT Protocol publication helpers.
 
 ## Actual surfaces
 
@@ -9,7 +9,7 @@ Guidance for agents working on Esoterica, a Rust conlang-generation library with
 - `data/*.toml` is embedded at compile time with `include_str!`. It currently contains sixteen phonologies, ten morphologies, ten syntax presets covering all six word orders, and nineteen sound-change keys including `none`. `Registries::load` returns a `Result`; the older `get_*_registry` helpers still panic on a malformed file and are kept for compatibility.
 - CLI mode uses only the first phonology and morphology values, errors on unknown archetype keys (listing the valid ones), requires a syntax preset key, and supports `--seed`, `--list`, `--preview`, `--sentences`, `--formal-rule`, `--script-type`, and `--glyph-style`. Publication requires both credential variables and fails loudly if they are missing.
 - The TUI honours `--seed`, `--lexicon-size`, `--syllables`, and `--output` from the CLI arguments; other flags are still ignored.
-- `web/` declares a file dependency on wasm-pack output at `pkg/`, but its three Svelte tools are still JavaScript mock/stub implementations and never import the WASM package. The lexicon tab generates random placeholder entries; the rule editor ignores formal contexts; the phonology preview is text only. **This is the largest remaining gap** — the Rust engine now exposes everything the UI mocks, including `trace_sound_changes` and `generate_words`.
+- `web/` runs the real engine. `web/src/lib/engine.js` is the only module that touches WASM: it initialises the `--target web` build once, caches the archetype catalogues, and exposes a JSON-marshalling facade. Components receive the facade as an `engine` prop from `App.svelte`, which renders them only after loading resolves; catalogues come from the module-level `presets()` rather than a prop, so they stay out of Svelte's reactivity graph. Four tools: phonology designer, lexicon browser, sound-change editor with derivation traces, and an orthography studio that renders the generated SVG glyphs.
 
 ## Invariants to preserve
 
@@ -38,6 +38,10 @@ Run `cargo clippy --all-targets --all-features`, `cargo test --all-features`, `c
 
 The tree is **not** rustfmt-clean and never has been — several modules use a deliberately dense hand-formatted style. Do not run `cargo fmt` across the repository; it would rewrite thousands of unrelated lines. Match the surrounding style in whatever file you are editing.
 
-For web changes, produce `pkg/` with `wasm-pack build --no-default-features --features wasm`, then install/build under `web/`; there is no tracked web lockfile or test suite.
+For web changes, produce `pkg/` with `wasm-pack build --target web --no-default-features --features wasm` (or `npm run wasm` from `web/`), then `npm install && npm run build` under `web/`. The build must stay warning-free; `state_referenced_locally` in particular means a component is snapshotting a prop and should read from `presets()` instead.
+
+`--target web` matters: the bundler target would need a Vite WASM plugin, whereas the web target initialises through the default export that `engine.js` already awaits. `Cargo.toml` sets `wasm-opt = false` because wasm-pack fetches a binaryen release at build time, which fails offline; run `wasm-opt -Oz` separately when shipping.
+
+There is no automated web test suite. Verify UI changes in a browser — the repo image ships Chromium at `/opt/pw-browsers/chromium` with `PLAYWRIGHT_BROWSERS_PATH` already set, so a short Playwright script against `vite preview` is the fastest check.
 
 `tests/pipeline.rs` holds the end-to-end tests: seeded reproducibility, every phonology × morphology pairing, every sound-change set, every syntax preset, and JSON round-trips. Unit tests live beside each module. When adding a feature, add coverage for empty/Unicode inventories, boundary conditions, invalid input, and — if it touches generation — a same-seed reproducibility assertion.

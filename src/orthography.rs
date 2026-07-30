@@ -8,7 +8,6 @@
 
 use crate::archetypes::Phonology;
 use crate::rng::SharedRng;
-use rand::seq::SliceRandom;
 use rand::Rng;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
@@ -231,105 +230,163 @@ impl OrthographyEngine {
     }
 
     // ── SVG Path Generators ─────────────────────────────────────────────────
-    // These produce random paths in each style. The results are not meaningful
-    // glyphs — they exist to give each generated script a distinct visual character.
+    // These produce random strokes in each style. The results are not designed
+    // letterforms — they exist to give each generated script a distinct visual
+    // character.
+    //
+    // Every generator anchors its vertices to a shared lattice and refuses to
+    // repeat a point within one glyph. Free-floating coordinates produced
+    // near-collinear slivers that were hard to tell apart, and a fixed shape
+    // list gave a 17-phoneme alphabet only a handful of distinct letters.
+
+    /// Lattice coordinates inside the 30x30 glyph box, leaving a stroke margin.
+    const LATTICE: [i32; 4] = [5, 12, 19, 26];
+
+    /// Pick `count` distinct lattice points, ordered as drawn.
+    fn lattice_points(count: usize, rng: &mut impl Rng) -> Vec<(i32, i32)> {
+        let mut points: Vec<(i32, i32)> = Vec::with_capacity(count);
+        // 16 lattice positions against at most 5 vertices, so rejection
+        // sampling terminates quickly.
+        let mut attempts = 0;
+        while points.len() < count && attempts < 64 {
+            attempts += 1;
+            let candidate = (
+                Self::LATTICE[rng.gen_range(0..Self::LATTICE.len())],
+                Self::LATTICE[rng.gen_range(0..Self::LATTICE.len())],
+            );
+            if !points.contains(&candidate) {
+                points.push(candidate);
+            }
+        }
+        points
+    }
+
+    /// Render points as a move-to followed by line-to segments.
+    fn polyline(points: &[(i32, i32)], close: bool) -> String {
+        let mut path = String::new();
+        for (i, (x, y)) in points.iter().enumerate() {
+            path.push_str(&format!("{}{},{}", if i == 0 { "M" } else { " L" }, x, y));
+        }
+        if close {
+            path.push_str(" Z");
+        }
+        path
+    }
 
     fn generate_angular_path(&self, rng: &mut impl Rng) -> String {
-        let x1 = rng.gen_range(0..20);
-        let y1 = rng.gen_range(0..30);
-        let x2 = rng.gen_range(10..30);
-        let y2 = rng.gen_range(0..30);
-        let x3 = rng.gen_range(5..25);
-        let y3 = rng.gen_range(5..30);
-        format!("M{},{} L{},{} L{},{} Z", x1, y1, x2, y2, x3, y3)
+        let points = Self::lattice_points(rng.gen_range(3..=4), rng);
+        Self::polyline(&points, rng.gen_bool(0.35))
     }
 
     fn generate_curved_path(&self, rng: &mut impl Rng) -> String {
-        let x1 = rng.gen_range(0..15);
-        let y1 = rng.gen_range(5..25);
-        let cx1 = rng.gen_range(5..25);
-        let cy1 = rng.gen_range(0..30);
-        let x2 = rng.gen_range(10..30);
-        let y2 = rng.gen_range(5..25);
-        format!("M{},{} Q{},{},{},{}", x1, y1, cx1, cy1, x2, y2)
+        let points = Self::lattice_points(rng.gen_range(3..=4), rng);
+        if points.len() < 2 {
+            return Self::polyline(&points, false);
+        }
+        // Each segment bows toward a control point offset from its midpoint.
+        let mut path = format!("M{},{}", points[0].0, points[0].1);
+        for pair in points.windows(2) {
+            let (x1, y1) = pair[0];
+            let (x2, y2) = pair[1];
+            let bow = rng.gen_range(-9..=9);
+            let cx = (x1 + x2) / 2 + bow;
+            let cy = (y1 + y2) / 2 - bow;
+            path.push_str(&format!(" Q{},{} {},{}", cx.clamp(0, 30), cy.clamp(0, 30), x2, y2));
+        }
+        path
     }
 
     fn generate_minimal_path(&self, rng: &mut impl Rng) -> String {
-        let shapes = [
-            "M5,15 L25,15",
-            "M15,5 L15,25",
-            "M10,10 L20,20",
-            "M5,5 L25,5 L25,25 L5,25 Z",
-            "M5,10 L25,10 M15,10 L15,20",
-        ];
-        shapes.choose(rng).unwrap().to_string()
+        // Compose one to three primitive strokes so the style still yields a
+        // distinct mark per phoneme rather than repeating a fixed shape list.
+        let strokes = rng.gen_range(1..=3);
+        let mut path = String::new();
+        for _ in 0..strokes {
+            let a = Self::LATTICE[rng.gen_range(0..Self::LATTICE.len())];
+            let b = Self::LATTICE[rng.gen_range(0..Self::LATTICE.len())];
+            let stroke = match rng.gen_range(0..4) {
+                0 => format!("M{},{} L{},{}", Self::LATTICE[0], a, Self::LATTICE[3], a),
+                1 => format!("M{},{} L{},{}", a, Self::LATTICE[0], a, Self::LATTICE[3]),
+                2 => format!("M{},{} L{},{}", a, b, b, a),
+                _ => format!("M{},{} L{},{}", a, b, (a + 7).min(30), (b + 7).min(30)),
+            };
+            if !path.is_empty() {
+                path.push(' ');
+            }
+            path.push_str(&stroke);
+        }
+        path
     }
 
     fn generate_ornate_path(&self, rng: &mut impl Rng) -> String {
-        let mut path = String::new();
-        let segments = rng.gen_range(3..=6);
-        let mut x = 5.0_f64;
-        let mut y = 15.0_f64;
-        path.push_str(&format!("M{:.0},{:.0}", x, y));
-        for _ in 0..segments {
-            let cx = x + rng.gen_range(2.0..10.0);
-            let cy = y + rng.gen_range(-10.0..10.0);
-            x += rng.gen_range(3.0..8.0);
-            y = 5.0 + rng.gen_range(0.0..20.0);
-            path.push_str(&format!(" Q{:.1},{:.1} {:.1},{:.1}", cx, cy, x, y));
+        let points = Self::lattice_points(rng.gen_range(4..=5), rng);
+        let mut path = match points.first() {
+            Some((x, y)) => format!("M{},{}", x, y),
+            None => return "M5,15 L26,15".to_string(),
+        };
+        for pair in points.windows(2) {
+            let (x1, y1) = pair[0];
+            let (x2, y2) = pair[1];
+            let cx1 = (x1 + rng.gen_range(-8..=8)).clamp(0, 30);
+            let cy1 = (y1 + rng.gen_range(-8..=8)).clamp(0, 30);
+            let cx2 = (x2 + rng.gen_range(-8..=8)).clamp(0, 30);
+            let cy2 = (y2 + rng.gen_range(-8..=8)).clamp(0, 30);
+            path.push_str(&format!(" C{},{} {},{} {},{}", cx1, cy1, cx2, cy2, x2, y2));
         }
         path
     }
 
     fn generate_diacritic_path(&self, rng: &mut impl Rng) -> String {
-        let marks = [
-            "M5,5 L15,0 L25,5".to_string(),
-            "M10,0 L20,0".to_string(),
-            "M15,0 C20,5 25,10 15,10".to_string(),
-            "M5,8 L15,0 L25,8".to_string(),
-        ];
-        marks.choose(rng).unwrap().clone()
+        // Diacritics sit above the base glyph, so they stay in the top band.
+        // The centre is inset so the arms cannot reach outside the view box.
+        let x = Self::LATTICE[rng.gen_range(0..Self::LATTICE.len())].clamp(10, 21);
+        match rng.gen_range(0..5) {
+            0 => format!("M{},7 L{},1 L{},7", x - 5, x, x + 5),
+            1 => format!("M{},2 L{},2", x - 5, x + 5),
+            2 => format!("M{},1 C{},6 {},9 {},9", x, x + 5, x + 8, x),
+            3 => format!("M{},1 L{},7", x, x + 5),
+            _ => format!("M{},4 L{},4 M{},1 L{},7", x - 5, x + 5, x, x),
+        }
     }
 
     fn generate_abugida_path(&self, rng: &mut impl Rng) -> String {
-        let base_x = rng.gen_range(0..15);
-        let base_y = rng.gen_range(5..20);
-        let mark_x = rng.gen_range(8..22);
-        let mark_y = rng.gen_range(0..10);
-        format!("M{},{} L{},{} M{},{} L{},{}",
-            base_x, base_y, base_x + 10, base_y + 8,
-            mark_x, mark_y, mark_x + 5, mark_y + 5)
+        // A base consonant stroke plus a vowel mark attached above it.
+        let base = Self::lattice_points(2, rng);
+        let base_path = Self::polyline(&base, false);
+        let mark_x = Self::LATTICE[rng.gen_range(0..Self::LATTICE.len())];
+        format!(
+            "{} M{},2 L{},6",
+            base_path,
+            mark_x,
+            (mark_x + rng.gen_range(-4..=4)).clamp(0, 30)
+        )
     }
 
     fn generate_complex_angular(&self, rng: &mut impl Rng) -> String {
-        let mut path = String::new();
-        let n = rng.gen_range(4..=8);
-        let mut x = rng.gen_range(2..8);
-        let mut y = rng.gen_range(5..20);
-        path.push_str(&format!("M{},{}", x, y));
-        for _ in 0..n {
-            x += rng.gen_range(2..8);
-            y = rng.gen_range(2..28);
-            path.push_str(&format!(" L{},{}", x, y));
-        }
-        path.push_str(" Z");
-        path
+        // Logograms are denser than phonetic glyphs: more vertices, closed.
+        let points = Self::lattice_points(rng.gen_range(5..=7), rng);
+        Self::polyline(&points, true)
     }
 
     fn generate_complex_curved(&self, rng: &mut impl Rng) -> String {
-        let mut path = String::new();
-        let n = rng.gen_range(3..=5);
-        let mut x = 5.0_f64;
-        let mut y = 15.0_f64;
-        path.push_str(&format!("M{:.0},{:.0}", x, y));
-        for _ in 0..n {
-            let cx1 = x + rng.gen_range(2.0..8.0);
-            let cy1 = y + rng.gen_range(-8.0..8.0);
-            let cx2 = x + rng.gen_range(5.0..15.0);
-            let cy2 = y + rng.gen_range(-6.0..6.0);
-            x += rng.gen_range(4.0..12.0);
-            y = 5.0 + rng.gen_range(0.0..18.0);
-            path.push_str(&format!(" C{:.1},{:.1} {:.1},{:.1} {:.1},{:.1}", cx1, cy1, cx2, cy2, x, y));
+        let points = Self::lattice_points(rng.gen_range(4..=6), rng);
+        let mut path = match points.first() {
+            Some((x, y)) => format!("M{},{}", x, y),
+            None => return "M5,15 L26,15".to_string(),
+        };
+        for pair in points.windows(2) {
+            let (x1, y1) = pair[0];
+            let (x2, y2) = pair[1];
+            let bow = rng.gen_range(-10..=10);
+            path.push_str(&format!(
+                " C{},{} {},{} {},{}",
+                (x1 + bow).clamp(0, 30),
+                (y1 - bow).clamp(0, 30),
+                (x2 - bow).clamp(0, 30),
+                (y2 + bow).clamp(0, 30),
+                x2,
+                y2
+            ));
         }
         path
     }
@@ -488,6 +545,65 @@ mod tests {
         let engine = OrthographyEngine::seeded(ScriptType::Logography, GlyphStyle::Curved, 1);
         // The logogram set is concept-based, so it survives an empty inventory.
         assert!(engine.generate(empty).len() >= 50);
+    }
+
+    #[test] fn glyphs_within_a_script_are_distinct() {
+        // A fixed shape list used to give every style only a handful of marks,
+        // so a 17-letter alphabet had visibly duplicated letters.
+        let mut phono = make_phono();
+        phono.consonants = "p b t d k g q m n s z f v l r j w"
+            .split(' ')
+            .map(|s| s.to_string())
+            .collect();
+        for style in ALL_STYLES {
+            let engine = OrthographyEngine::seeded(ScriptType::Alphabet, style, 5);
+            let mapping = engine.generate(phono.clone());
+            let paths: std::collections::HashSet<&str> =
+                mapping.values().map(|g| g.svg_path.as_str()).collect();
+            // Random generation can still collide; demand that the overwhelming
+            // majority of glyphs are unique rather than perfection.
+            assert!(
+                paths.len() * 10 >= mapping.len() * 9,
+                "{:?} produced only {} distinct shapes for {} phonemes",
+                style,
+                paths.len(),
+                mapping.len()
+            );
+        }
+    }
+
+    #[test] fn glyph_paths_stay_inside_the_view_box() {
+        for style in ALL_STYLES {
+            for script in ALL_SCRIPTS {
+                let engine = OrthographyEngine::seeded(script, style, 17);
+                for (key, glyph) in engine.generate(make_phono()) {
+                    for number in glyph
+                        .svg_path
+                        .split(|c: char| !c.is_ascii_digit() && c != '-')
+                        .filter(|s| !s.is_empty())
+                    {
+                        let value: i32 = number.parse().expect("numeric path component");
+                        assert!(
+                            (-2..=32).contains(&value),
+                            "{:?}/{:?} glyph {} leaves the box: {}",
+                            script,
+                            style,
+                            key,
+                            glyph.svg_path
+                        );
+                    }
+                }
+            }
+        }
+    }
+
+    #[test] fn glyph_paths_start_with_a_move_command() {
+        for style in ALL_STYLES {
+            let engine = OrthographyEngine::seeded(ScriptType::Alphabet, style, 3);
+            for (key, glyph) in engine.generate(make_phono()) {
+                assert!(glyph.svg_path.starts_with('M'), "{} -> {}", key, glyph.svg_path);
+            }
+        }
     }
 
     #[test] fn multigraph_phonemes_get_their_own_glyphs() {

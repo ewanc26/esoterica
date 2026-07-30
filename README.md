@@ -41,10 +41,25 @@ cargo run --release -- \
   --preview 10 \
   --output my_language.json
 
-# WASM
-wasm-pack build --features wasm --no-default-features
+# Web UI (builds the WASM package, then serves the Svelte front end)
+cd web && npm install && npm run wasm && npm run dev
+```
 
-# Web UI
+## Web UI
+
+Four tools, all running the real Rust engine compiled to WebAssembly:
+
+- **Phonology Designer** — click phonemes on an IPA chart and see generated words with IPA, or load any bundled inventory as a starting point
+- **Lexicon Browser** — generate a full dictionary with drift, view the typological summary and an example sentence, download the JSON
+- **Sound Changes** — write rules in formal notation, reorder them, and see the derivation form by form
+- **Orthography Studio** — render generated writing systems as SVG and download the glyph sheet
+
+The dropdowns are populated from the engine's embedded registries, so they
+cannot drift out of sync with `data/*.toml`. Build the WASM package before the
+front end:
+
+```bash
+wasm-pack build --target web --no-default-features --features wasm
 cd web && npm install && npm run dev
 ```
 

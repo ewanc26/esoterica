@@ -174,11 +174,13 @@ impl LexiconGenerator {
         let domain = *DOMAINS.choose(rng).expect("DOMAINS is non-empty");
         let part_of_speech = *PARTS_OF_SPEECH.choose(rng).expect("PARTS_OF_SPEECH is non-empty");
 
-        let fallback = vec![GENERIC_DEFINITION];
+        // Falling back to the domain's noun list would gloss an adverb as
+        // "A weapon forged for protection", so an uncovered pairing drops to a
+        // generic list for the same part of speech instead of the same domain.
         let definitions = defs
             .get(&(domain, part_of_speech))
-            .or_else(|| defs.get(&(domain, "noun")))
-            .unwrap_or(&fallback);
+            .map(Vec::as_slice)
+            .unwrap_or_else(|| generic_definitions(part_of_speech));
 
         let num_senses = rng.gen_range(1..=2.min(definitions.len()).max(1));
         let selected: Vec<&&str> = definitions.choose_multiple(rng, num_senses).collect();
@@ -222,7 +224,33 @@ const DOMAINS: &[&str] = &[
 
 const PARTS_OF_SPEECH: &[&str] = &["noun", "verb", "adjective", "adverb"];
 
-const GENERIC_DEFINITION: &str = "A general concept of the language";
+/// Definitions used when a (domain, part of speech) pairing has no entry.
+/// Each list is written for its part of speech so the gloss never contradicts
+/// the label on the entry.
+fn generic_definitions(part_of_speech: &str) -> &'static [&'static str] {
+    match part_of_speech {
+        "verb" => &[
+            "To perform an action of this kind",
+            "To bring about a change of state",
+            "To undergo something without resisting it",
+        ],
+        "adjective" => &[
+            "Having the quality in question",
+            "Marked out by some notable property",
+            "Ordinary, calling for no further comment",
+        ],
+        "adverb" => &[
+            "In the manner described",
+            "As far as the context implies",
+            "At the expected time or place",
+        ],
+        _ => &[
+            "A general concept of the language",
+            "A thing of the relevant kind",
+            "An entity whose sense is now obscure",
+        ],
+    }
+}
 
 const CITATION_SOURCES: &[(&str, &str, &str)] = &[
     ("Ancient Bard", "The Proto-Songs", "c. 1200"),
@@ -393,6 +421,35 @@ mod tests {
             assert!(!entry.senses.is_empty());
             assert!(entry.senses.iter().all(|s| !s.citations.is_empty()));
             assert!(entry.noun_class.is_some());
+        }
+    }
+
+    #[test]
+    fn uncovered_pairings_fall_back_within_their_part_of_speech() {
+        let bank = definition_bank();
+        // Every domain has a noun list, so the gap is in the other classes.
+        for domain in DOMAINS {
+            for pos in PARTS_OF_SPEECH {
+                if bank.contains_key(&(*domain, *pos)) {
+                    continue;
+                }
+                let fallback = generic_definitions(pos);
+                assert!(!fallback.is_empty(), "{}/{} has no fallback", domain, pos);
+                // The verb fallbacks are the only ones written as infinitives.
+                if *pos == "verb" {
+                    assert!(fallback.iter().all(|d| d.starts_with("To ")));
+                } else {
+                    assert!(fallback.iter().all(|d| !d.starts_with("To ")));
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn generic_definitions_are_distinct_per_part_of_speech() {
+        let noun = generic_definitions("noun");
+        for pos in ["verb", "adjective", "adverb"] {
+            assert_ne!(generic_definitions(pos), noun, "{} reuses the noun list", pos);
         }
     }
 

@@ -84,6 +84,13 @@ cargo run --release -- \
   --publication-uri "at://did:plc:.../site.standard.publication/..."
 ```
 
+## Support
+
+If you find this project useful, consider supporting its development:
+
+[![Ko-fi](https://img.shields.io/badge/Ko--fi-F16061?style=for-the-badge&logo=ko-fi&logoColor=white)](https://ko-fi.com/ewancroft)
+[![GitHub Sponsors](https://img.shields.io/badge/GitHub%20Sponsors-30363D?style=for-the-badge&logo=github&logoColor=white)](https://github.com/sponsors/ewanc26)
+
 ## Licence
 
 MIT

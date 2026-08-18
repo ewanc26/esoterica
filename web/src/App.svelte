@@ -49,6 +49,11 @@
       Built with <a href="https://svelte.dev">Svelte 5</a> —
       <a href="https://github.com/ewanc26/esoterica">ewanc26/esoterica</a>
     </p>
+    <p>
+      Support the project:
+      <a href="https://ko-fi.com/ewancroft">Ko-fi</a> ·
+      <a href="https://github.com/sponsors/ewanc26">GitHub Sponsors</a>
+    </p>
   </footer>
 </div>
 

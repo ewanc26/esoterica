@@ -21,6 +21,15 @@ async fn main() -> EyreResult<()> {
 
     let args = Args::parse_args();
 
+    // ── Support ─────────────────────────────────────────────────────────────
+
+    if args.support {
+        println!("Support Esoterica development:");
+        println!("  Ko-fi: https://ko-fi.com/ewancroft");
+        println!("  GitHub Sponsors: https://github.com/sponsors/ewanc26");
+        return Ok(());
+    }
+
     // ── Interactive Mode ────────────────────────────────────────────────────
 
     if args.interactive {

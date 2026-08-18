@@ -58,6 +58,10 @@ pub struct Args {
     /// Generate a procedural orthography/script
     #[arg(long)]
     pub generate_orthography: bool,
+
+    /// Print sponsor links and exit
+    #[arg(long)]
+    pub support: bool,
 }
 
 impl Args {

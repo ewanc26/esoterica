@@ -1,7 +1,6 @@
-//! Interactive Phonology Designer TUI
-//! Allows toggling phonemes on an IPA grid with real-time syllable preview.
-//! Users can browse the full IPA chart, toggle phonemes on/off, apply presets,
-//! configure syllable structure, tone, and vowel harmony, then confirm the result.
+//! Interactive Phonology Designer TUI.
+//! Browse the IPA chart, toggle consonants and vowels, pick a syllable template,
+//! toggle tone and vowel harmony, then confirm. The preview updates on every change.
 
 use ratatui::{
     layout::{Constraint, Direction, Layout, Rect},
@@ -11,11 +10,9 @@ use ratatui::{
     Frame,
 };
 use crossterm::event::KeyCode;
-use crate::archetypes::Phonology;
+use crate::archetypes::{validate_template, Phonology};
 use crate::phonology::PhonologyEngine;
 use std::collections::HashSet;
-
-// ── IPA Chart Data ──────────────────────────────────────────────────────
 
 /// Full IPA consonant chart organized by place/manner of articulation
 const IPA_CONSONANTS: &[(&str, &[&str])] = &[
@@ -37,16 +34,28 @@ const IPA_VOWELS: &[(&str, &[&str])] = &[
     ("Open", &["\u{00e6}", "", "\u{0250}", "", "\u{0251}", "\u{0252}"]),
 ];
 
-#[derive(PartialEq, Clone, Copy)]
+/// Syllable templates the designer cycles through with + and -. Every entry is valid.
+const STRUCTURES: &[&str] = &["V", "CV", "CVC", "CCVC", "CCVCC"];
+const DEFAULT_STRUCTURE: usize = 1;
+const MIN_TONES: u8 = 2;
+const MAX_TONES: u8 = 9;
+
+const MINIMAL_CONSONANTS: &[&str] = &["p", "t", "k", "m", "n", "s", "l"];
+const MINIMAL_VOWELS: &[&str] = &["a", "i", "u"];
+const FULL_CONSONANTS: &[&str] = &["p", "b", "t", "d", "k", "g", "m", "n", "f", "v", "s", "z", "h", "l", "r", "j", "w"];
+const FULL_VOWELS: &[&str] = &["a", "e", "i", "o", "u"];
+
+#[derive(PartialEq, Clone, Copy, Debug)]
 enum DesignerTab { Consonants, Vowels, Presets }
 
 // ── Phonology Designer ──────────────────────────────────────────────────
 
 pub struct PhonologyDesigner {
+    /// True while the designer screen is open.
     pub active: bool,
     selected_consonants: HashSet<String>,
     selected_vowels: HashSet<String>,
-    syllable_structure: String,
+    structure: usize,
     tones: bool,
     tone_count: u8,
     vowel_harmony: bool,
@@ -54,23 +63,20 @@ pub struct PhonologyDesigner {
     cursor_col: usize,
     active_tab: DesignerTab,
     preview_word: String,
-    /// The generated phonology, if the user has confirmed
-    pub confirmed_phonology: Option<Phonology>,
+    confirmed: bool,
+}
+
+impl Default for PhonologyDesigner {
+    fn default() -> Self { Self::new() }
 }
 
 impl PhonologyDesigner {
     pub fn new() -> Self {
-        // Default: a basic phonology preset
-        let selected_consonants: HashSet<String> = ["p", "t", "k", "m", "n", "s", "l", "r", "h"]
-            .iter().map(|s| s.to_string()).collect();
-        let selected_vowels: HashSet<String> = ["a", "e", "i", "o", "u"]
-            .iter().map(|s| s.to_string()).collect();
-
         let mut designer = Self {
             active: false,
-            selected_consonants,
-            selected_vowels,
-            syllable_structure: "CV".to_string(),
+            selected_consonants: HashSet::new(),
+            selected_vowels: HashSet::new(),
+            structure: DEFAULT_STRUCTURE,
             tones: false,
             tone_count: 4,
             vowel_harmony: false,
@@ -78,85 +84,68 @@ impl PhonologyDesigner {
             cursor_col: 0,
             active_tab: DesignerTab::Consonants,
             preview_word: String::new(),
-            confirmed_phonology: None,
+            confirmed: false,
         };
-        designer.regenerate_preview();
+        designer.apply_minimal();
         designer
     }
 
     pub fn toggle(&mut self) { self.active = !self.active; }
 
+    /// True once, after the user has confirmed the design with `y`.
+    pub fn take_confirmed(&mut self) -> bool {
+        std::mem::take(&mut self.confirmed)
+    }
+
     // ── Key Handling ────────────────────────────────────────────────────────
 
-    /// Handle a single keypress. Returns true if the event was consumed.
+    /// Handle a key while the designer is open. Returns true if the key was used.
     pub fn handle_key(&mut self, key: KeyCode) -> bool {
         if !self.active { return false; }
         match key {
-            KeyCode::Char('q') => { self.active = false; return true; }
-            KeyCode::Char('\t') => {
+            KeyCode::Char('q') | KeyCode::Esc => { self.active = false; }
+            KeyCode::Tab => {
                 self.active_tab = match self.active_tab {
                     DesignerTab::Consonants => DesignerTab::Vowels,
                     DesignerTab::Vowels => DesignerTab::Presets,
                     DesignerTab::Presets => DesignerTab::Consonants,
                 };
-                self.cursor_row = 0; self.cursor_col = 0;
+                self.cursor_row = 0;
+                self.cursor_col = 0;
             }
-            KeyCode::Char('p') => {
-                // Apply preset
-                self.apply_preset("full");
-            }
-            KeyCode::Char('m') => {
-                self.apply_preset("minimal");
-            }
-            KeyCode::Char('t') => {
-                self.tones = !self.tones;
-                self.regenerate_preview();
-            }
-            KeyCode::Char('h') => {
-                self.vowel_harmony = !self.vowel_harmony;
-                self.regenerate_preview();
-            }
+            KeyCode::Char('p') => self.apply_full(),
+            KeyCode::Char('m') => self.apply_minimal(),
+            KeyCode::Char('t') => { self.tones = !self.tones; self.regenerate_preview(); }
+            KeyCode::Char('[') => { self.tone_count = self.tone_count.saturating_sub(1).max(MIN_TONES); self.regenerate_preview(); }
+            KeyCode::Char(']') => { self.tone_count = (self.tone_count + 1).min(MAX_TONES); self.regenerate_preview(); }
+            KeyCode::Char('h') => { self.vowel_harmony = !self.vowel_harmony; self.regenerate_preview(); }
             KeyCode::Char('+') => {
-                // Add a consonant cluster slot
-                if self.syllable_structure.len() < 8 {
-                    let pos = self.syllable_structure.len() - 1;
-                    self.syllable_structure.insert(pos, 'C');
-                }
+                self.structure = (self.structure + 1).min(STRUCTURES.len() - 1);
                 self.regenerate_preview();
             }
             KeyCode::Char('-') => {
-                if self.syllable_structure.len() > 2 {
-                    // Remove one C from the onset (before first V)
-                    if let Some(pos) = self.syllable_structure.find('C') {
-                        self.syllable_structure.remove(pos);
-                    }
-                }
+                self.structure = self.structure.saturating_sub(1);
                 self.regenerate_preview();
             }
-            KeyCode::Up => {
-                if self.cursor_row > 0 { self.cursor_row -= 1; }
-            }
+            KeyCode::Up => { self.cursor_row = self.cursor_row.saturating_sub(1); }
             KeyCode::Down => {
                 let max = self.grid_rows().saturating_sub(1);
                 if self.cursor_row < max { self.cursor_row += 1; }
             }
-            KeyCode::Left => {
-                if self.cursor_col > 0 { self.cursor_col -= 1; }
-            }
+            KeyCode::Left => { self.cursor_col = self.cursor_col.saturating_sub(1); }
             KeyCode::Right => {
                 let max = self.grid_cols().saturating_sub(1);
                 if self.cursor_col < max { self.cursor_col += 1; }
             }
             KeyCode::Enter | KeyCode::Char(' ') => {
-                self.toggle_phoneme();
+                self.toggle_phoneme_at_cursor();
                 self.regenerate_preview();
             }
             KeyCode::Char('y') => {
-                // Confirm and return the custom phonology
-                self.confirmed_phonology = Some(self.to_phonology());
+                self.confirmed = true;
                 self.active = false;
             }
-            _ => {}
+            _ => return false,
         }
         true
     }
@@ -165,7 +154,7 @@ impl PhonologyDesigner {
         match self.active_tab {
             DesignerTab::Consonants => IPA_CONSONANTS.len(),
             DesignerTab::Vowels => IPA_VOWELS.len(),
-            DesignerTab::Presets => 4,
+            DesignerTab::Presets => 1,
         }
     }
 
@@ -177,92 +166,67 @@ impl PhonologyDesigner {
         }
     }
 
-    fn toggle_phoneme(&self) {
-        // This is intentionally a no-op at the shared-data level;
-        // toggling happens via interior mutability on the HashSet fields.
-        // We use unsafe to get mutable access since ratatui renders immutably.
-    }
-
-    /// This must be called from a context that has &mut self
-    pub fn toggle_phoneme_mut(&mut self) {
-        let phoneme = match self.active_tab {
-            DesignerTab::Consonants => {
-                IPA_CONSONANTS.get(self.cursor_row)
-                    .and_then(|r| r.1.get(self.cursor_col))
-                    .filter(|s| !s.is_empty())
-                    .map(|s| s.to_string())
-            }
-            DesignerTab::Vowels => {
-                IPA_VOWELS.get(self.cursor_row)
-                    .and_then(|r| r.1.get(self.cursor_col))
-                    .filter(|s| !s.is_empty())
-                    .map(|s| s.to_string())
-            }
-            DesignerTab::Presets => None,
+    /// The IPA symbol under the cursor on the active grid, if it is a real phoneme.
+    fn phoneme_at_cursor(&self) -> Option<&'static str> {
+        let grid = match self.active_tab {
+            DesignerTab::Consonants => IPA_CONSONANTS,
+            DesignerTab::Vowels => IPA_VOWELS,
+            DesignerTab::Presets => return None,
         };
+        grid.get(self.cursor_row)
+            .and_then(|r| r.1.get(self.cursor_col))
+            .copied()
+            .filter(|s| !s.is_empty())
+    }
 
-        if let Some(p) = phoneme {
-            match self.active_tab {
-                DesignerTab::Consonants => {
-                    if self.selected_consonants.contains(&p) {
-                        self.selected_consonants.remove(&p);
-                    } else {
-                        self.selected_consonants.insert(p);
-                    }
-                }
-                DesignerTab::Vowels => {
-                    if self.selected_vowels.contains(&p) {
-                        self.selected_vowels.remove(&p);
-                    } else {
-                        self.selected_vowels.insert(p);
-                    }
-                }
-                _ => {}
-            }
+    fn toggle_phoneme_at_cursor(&mut self) {
+        let Some(p) = self.phoneme_at_cursor() else { return };
+        let set = match self.active_tab {
+            DesignerTab::Consonants => &mut self.selected_consonants,
+            DesignerTab::Vowels => &mut self.selected_vowels,
+            DesignerTab::Presets => return,
+        };
+        if !set.remove(p) {
+            set.insert(p.to_string());
         }
     }
 
-    fn apply_preset(&mut self, preset: &str) {
-        match preset {
-            "minimal" => {
-                self.selected_consonants = ["p", "t", "k", "m", "n", "s", "a"]
-                    .iter().map(|s| s.to_string()).collect();
-                self.selected_vowels = ["a", "i", "u"]
-                    .iter().map(|s| s.to_string()).collect();
-                self.syllable_structure = "CV".to_string();
-                self.vowel_harmony = false;
-                self.tones = false;
-            }
-            _ => {
-                // Full preset: many common phonemes
-                self.selected_consonants = ["p", "b", "t", "d", "k", "g", "m", "n", "f", "v", "s", "z", "h", "l", "r", "j", "w"]
-                    .iter().map(|s| s.to_string()).collect();
-                self.selected_vowels = ["a", "e", "i", "o", "u"]
-                    .iter().map(|s| s.to_string()).collect();
-                self.syllable_structure = "CVC".to_string();
-                self.vowel_harmony = false;
-                self.tones = false;
-            }
-        }
+    fn apply_minimal(&mut self) {
+        self.selected_consonants = MINIMAL_CONSONANTS.iter().map(|s| s.to_string()).collect();
+        self.selected_vowels = MINIMAL_VOWELS.iter().map(|s| s.to_string()).collect();
+        self.structure = 1; // CV
+        self.vowel_harmony = false;
+        self.tones = false;
+        self.regenerate_preview();
+    }
+
+    fn apply_full(&mut self) {
+        self.selected_consonants = FULL_CONSONANTS.iter().map(|s| s.to_string()).collect();
+        self.selected_vowels = FULL_VOWELS.iter().map(|s| s.to_string()).collect();
+        self.structure = 2; // CVC
+        self.vowel_harmony = false;
+        self.tones = false;
         self.regenerate_preview();
     }
 
     fn regenerate_preview(&mut self) {
-        let phono = self.to_phonology();
-        let engine = PhonologyEngine::new(phono);
+        let engine = PhonologyEngine::new(self.to_phonology());
         let word = engine.generate_word(3);
         self.preview_word = format!("{} {}", word, engine.to_ipa(&word));
     }
 
+    /// The phonology described by the current selections.
     pub fn to_phonology(&self) -> Phonology {
         let mut consonants: Vec<String> = self.selected_consonants.iter().cloned().collect();
         consonants.sort();
         let mut vowels: Vec<String> = self.selected_vowels.iter().cloned().collect();
         vowels.sort();
+        let syllable_structure = STRUCTURES[self.structure].to_string();
+        debug_assert!(validate_template(&syllable_structure).is_ok());
         Phonology {
             vowels,
             consonants,
-            syllable_structure: self.syllable_structure.clone(),
+            syllable_structure,
             tones: if self.tones { Some(self.tone_count) } else { None },
             vowel_harmony: Some(self.vowel_harmony),
         }
@@ -272,7 +236,7 @@ impl PhonologyDesigner {
 
     pub fn render(&self, f: &mut Frame, area: Rect) {
         let outer = Block::default()
-            .title("Phonology Designer [q:back tab:switch p:full m:minimal t:tone h:harmony +/-:structure y:confirm]")
+            .title("Phonology Designer [q/Esc:back Tab:tab p:full m:minimal t:tone []:count h:harmony +/-:structure y:use]")
             .borders(Borders::ALL)
             .border_style(Style::default().fg(Color::Cyan));
         let inner = outer.inner(area);
@@ -284,26 +248,23 @@ impl PhonologyDesigner {
             .constraints([Constraint::Length(3), Constraint::Min(5), Constraint::Length(2)])
             .split(inner);
 
-        // Status bar
         let status = format!(
-            "C:{} V:{} | Structure: {} | Tone: {} | Harmony: {} | Preview: {}",
+            "C:{} V:{} | Structure: {} | Tone: {} | Harmony: {}\nPreview: {}",
             self.selected_consonants.len(),
             self.selected_vowels.len(),
-            self.syllable_structure,
+            STRUCTURES[self.structure],
             if self.tones { format!("{} tones", self.tone_count) } else { "off".to_string() },
             if self.vowel_harmony { "on" } else { "off" },
             self.preview_word,
         );
         f.render_widget(Paragraph::new(status), chunks[0]);
 
-        // IPA Grid
         match self.active_tab {
             DesignerTab::Consonants => self.render_ipa_grid(f, chunks[1], IPA_CONSONANTS, &self.selected_consonants),
             DesignerTab::Vowels => self.render_ipa_grid(f, chunks[1], IPA_VOWELS, &self.selected_vowels),
             DesignerTab::Presets => self.render_presets(f, chunks[1]),
         }
 
-        // Tab indicator
         let indicator = match self.active_tab {
             DesignerTab::Consonants => " [Consonants] | Vowels | Presets ",
             DesignerTab::Vowels => " Consonants | [Vowels] | Presets ",
@@ -327,7 +288,7 @@ impl PhonologyDesigner {
                     continue;
                 }
                 let is_selected = selected.contains(*phoneme);
-                let is_cursor = self.active && row_idx == self.cursor_row && col_idx == self.cursor_col;
+                let is_cursor = row_idx == self.cursor_row && col_idx == self.cursor_col;
                 let mut style = if is_selected {
                     Style::default().fg(Color::Green).add_modifier(Modifier::BOLD)
                 } else {
@@ -345,21 +306,96 @@ impl PhonologyDesigner {
 
     fn render_presets(&self, f: &mut Frame, area: Rect) {
         let text = format!(
-            "Presets - Press key to apply:\n\n\
-             [p] Full   - 17 consonants, 5 vowels, CVC structure\n\
-             [m] Minimal - 7 consonants, 3 vowels, CV structure\n\n\
+            "Presets - press a key to apply:\n\n\
+             [p] Full    - {} consonants, {} vowels, CVC structure\n\
+             [m] Minimal - {} consonants, {} vowels, CV structure\n\n\
              Controls:\n\
-             [t] Toggle tones (currently: {})\n\
-             [h] Toggle vowel harmony (currently: {})\n\
-             [+/-] Adjust syllable structure (currently: {})\n\
-             [y] Confirm and use this phonology\n\n\
+             [t] Tones: {}     [ / ] tone count: {}\n\
+             [h] Vowel harmony: {}\n\
+             [+ / -] Syllable structure: {}\n\
+             [y] Use this phonology in generation\n\n\
              Current selection: {} consonants, {} vowels",
-            if self.tones { format!("{} tones ON", self.tone_count) } else { "OFF".to_string() },
+            FULL_CONSONANTS.len(), FULL_VOWELS.len(),
+            MINIMAL_CONSONANTS.len(), MINIMAL_VOWELS.len(),
+            if self.tones { "ON" } else { "OFF" }, self.tone_count,
             if self.vowel_harmony { "ON" } else { "OFF" },
-            self.syllable_structure,
+            STRUCTURES[self.structure],
             self.selected_consonants.len(),
             self.selected_vowels.len(),
         );
         f.render_widget(Paragraph::new(text), area);
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn default_selection_is_a_valid_phonology() {
+        assert!(PhonologyDesigner::new().to_phonology().validate().is_ok());
+    }
+
+    #[test]
+    fn empty_vowel_inventory_is_rejected_by_validation() {
+        let mut designer = PhonologyDesigner::new();
+        designer.selected_vowels.clear();
+        assert!(designer.to_phonology().validate().is_err());
+    }
+
+    #[test]
+    fn minimal_preset_has_no_vowel_as_consonant() {
+        let mut designer = PhonologyDesigner::new();
+        designer.handle_key(KeyCode::Char('m'));
+        let p = designer.to_phonology();
+        assert!(!p.consonants.iter().any(|c| c == "a"), "{:?}", p.consonants);
+        assert_eq!(p.consonants.len(), 7);
+    }
+
+    #[test]
+    fn structure_cycling_only_yields_valid_templates() {
+        let mut designer = PhonologyDesigner::new();
+        designer.active = true;
+        for _ in 0..10 { designer.handle_key(KeyCode::Char('+')); assert!(validate_template(&designer.to_phonology().syllable_structure).is_ok()); }
+        for _ in 0..10 { designer.handle_key(KeyCode::Char('-')); assert!(validate_template(&designer.to_phonology().syllable_structure).is_ok()); }
+    }
+
+    #[test]
+    fn tab_cycles_grids_and_enter_toggles_with_a_fresh_preview() {
+        let mut designer = PhonologyDesigner::new();
+        designer.active = true;
+        designer.handle_key(KeyCode::Tab);
+        assert_eq!(designer.active_tab, DesignerTab::Vowels);
+        designer.handle_key(KeyCode::Tab);
+        assert_eq!(designer.active_tab, DesignerTab::Presets);
+        designer.handle_key(KeyCode::Tab);
+        assert_eq!(designer.active_tab, DesignerTab::Consonants);
+
+        // Cursor starts on "p" (row 0, col 0), which is selected by default: Enter removes it.
+        let before = designer.selected_consonants.len();
+        designer.handle_key(KeyCode::Enter);
+        assert_eq!(designer.selected_consonants.len(), before - 1);
+        assert!(!designer.to_phonology().consonants.contains(&"p".to_string()));
+    }
+
+    #[test]
+    fn tone_count_stays_in_range() {
+        let mut designer = PhonologyDesigner::new();
+        designer.active = true;
+        for _ in 0..20 { designer.handle_key(KeyCode::Char(']')); }
+        assert_eq!(designer.tone_count, MAX_TONES);
+        for _ in 0..20 { designer.handle_key(KeyCode::Char('[')); }
+        assert_eq!(designer.tone_count, MIN_TONES);
+    }
+
+    #[test]
+    fn confirm_closes_the_designer_and_signals_once() {
+        let mut designer = PhonologyDesigner::new();
+        designer.active = true;
+        designer.handle_key(KeyCode::Char('y'));
+        assert!(!designer.active);
+        assert!(designer.take_confirmed());
+        assert!(!designer.take_confirmed());
+    }
+}
+

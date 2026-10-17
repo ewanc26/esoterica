@@ -70,6 +70,27 @@ esoterica/
 └── Cargo.toml
 ```
 
+## Interactive TUI
+
+`cargo run --release -- --interactive` opens the terminal interface.
+
+| Key | Action |
+| --- | --- |
+| Tab / Shift-Tab | Move between Phonology, Morphology, Syntax and Sound Changes |
+| Up / Down | Move within a panel |
+| Space | Toggle a sound-change set (several can be on) |
+| Enter | Generate a lexicon |
+| l | Browse the lexicon (Up/Down, PgUp/PgDn, Home/End; l or Esc closes) |
+| s | Save the lexicon to `esoterica_out/` (never overwrites) |
+| p | Open the phonology designer |
+| h | Help |
+| q / Ctrl-C | Quit |
+
+In the designer, Tab switches between consonants, vowels and presets. Enter or Space toggles
+a phoneme, p and m apply the full and minimal presets, + and - change the syllable template,
+t toggles tone and [ and ] set the tone count, h toggles vowel harmony, and y uses the design.
+Selecting **(custom designer)** in the Phonology panel generates from the design.
+
 ## Adding data
 
 Registries are compiled in with `include_str!`, so a change to `data/` needs a rebuild.

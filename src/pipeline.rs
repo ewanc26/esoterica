@@ -82,6 +82,12 @@ impl Registries {
     /// name, with the valid choices listed.
     pub fn spec(&self, phonology: &str, morphology: &str, syntax: &str, sound_changes: &[String]) -> Result<Spec, String> {
         let phonology_cfg = lookup(&self.phonologies, "phonology", phonology)?.clone();
+        self.spec_with_phonology(phonology_cfg, morphology, syntax, sound_changes)
+    }
+
+    /// Resolve a configuration with an explicit phonology, such as one built in the
+    /// TUI designer. The result is validated when it is generated.
+    pub fn spec_with_phonology(&self, phonology_cfg: Phonology, morphology: &str, syntax: &str, sound_changes: &[String]) -> Result<Spec, String> {
         let morphology_cfg = lookup(&self.morphologies, "morphology", morphology)?.clone();
         let syntax_cfg = lookup(&self.syntaxes, "syntax", syntax)?.clone();
         let mut rules = Vec::new();

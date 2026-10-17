@@ -90,7 +90,7 @@ and creoles. `coverage_checklist_is_present` names the wider set of 82 inventori
 Germanic, Romance, Slavic, Indo-Aryan, Celtic, Iranian, Hellenic, Baltic, Armenian and
 Albanian (Indo-European); Finnic, Ugric and Samoyedic (Uralic); Turkic; Mongolic; Tungusic;
 Chukotko-Kamchatkan; Basque, Ainu, Yeniseian, Nivkh and Burushaski (isolates); Kartvelian;
-Northwest and Nakh-Dagestanian Caucasian; Semitic, Berber, Cushitic, Chadic and Omotic
+Northwest Caucasian and Nakh-Dagestanian; Semitic, Berber, Cushitic, Chadic and Omotic
 (Afro-Asiatic); Bantu, Yoruboid, Mande, Atlantic, Gur, Kwa and Ubangian (Niger-Congo);
 Nilotic, Saharan and Songhay (Nilo-Saharan); Khoe and Tuu (Khoisan); Sinitic, Burmese and
 Tibetic (Sino-Tibetan); Hmong-Mien; Viet-Muong; Tai (Tai-Kadai); Mon-Khmer (Austroasiatic);
@@ -98,7 +98,7 @@ Japonic; Koreanic; Dravidian; Austronesian (Polynesian, Malayo-Polynesian, Phili
 Malagasy); Trans-New Guinea and Sepik (Papuan); Pama-Nyungan and Gunwinyguan (Australian);
 Uto-Aztecan, Quechuan, Algic, Salishan, Eskaleut, Mayan, Arawakan, Athabaskan,
 Oto-Manguean, Tupian, Siouan, Iroquoian, Chibchan, Pano-Tacanan, Jê, Aymaran and
-Tucanoan (Americas); Tok Pisin and Haitian creoles; Toki Pona and Esperanto (constructed).
+Tucanoan (Americas); Creole: Tok Pisin and Haitian; Constructed: Toki Pona and Esperanto.
 
 **Not covered:** sign languages (the model generates spoken segments only); most Papuan
 families beyond Trans-New Guinea and Sepik; most Australian families beyond Pama-Nyungan

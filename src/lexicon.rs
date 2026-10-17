@@ -4,7 +4,7 @@
 
 use crate::phonology::PhonologyEngine;
 use crate::morphology::MorphologyEngine;
-use crate::archetypes::{Phonology, Morphology, SoundChange};
+use crate::archetypes::{Phonology, Morphology};
 use crate::lexicon_structs::{Lexicon, LexiconEntry, Sense, Citation};
 use std::fs::File;
 use std::io::Write;
@@ -23,11 +23,12 @@ pub struct LexiconGenerator {
 }
 
 impl LexiconGenerator {
-    pub fn new(phonology: Phonology, morphology: Morphology, sound_changes: Vec<SoundChange>) -> Self {
+    /// `sound_changes` are formal rules (e.g. "p > b / V_V"), applied in order to every root.
+    pub fn new(phonology: Phonology, morphology: Morphology, sound_changes: &[String]) -> Self {
         Self {
             phonology: PhonologyEngine::new(phonology),
             morphology: MorphologyEngine::new(morphology),
-            sound_change: crate::sound_change::SoundChangeEngine::new(sound_changes),
+            sound_change: crate::sound_change::SoundChangeEngine::from_formal_rules(sound_changes),
             lexicon: Lexicon(HashMap::new()),
             syllables_per_word: 2,
         }
@@ -146,3 +147,39 @@ impl LexiconGenerator {
         Ok(())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::archetypes::{get_morphology_registry, get_phonology_registry, get_sound_change_registry};
+    use crate::orthography::{GlyphStyle, OrthographyEngine, ScriptType};
+
+    /// Every phonology crossed with every morphology and every sound-change set must
+    /// generate a non-empty lexicon and orthography. Registry data is checked end to end here.
+    #[test]
+    fn every_registry_combination_generates() {
+        let phonologies = get_phonology_registry();
+        let morphologies = get_morphology_registry();
+        let sound_changes = get_sound_change_registry();
+
+        for (p_key, phono) in &phonologies {
+            for script in [ScriptType::Alphabet, ScriptType::Abjad, ScriptType::Abugida, ScriptType::Syllabary, ScriptType::Logography] {
+                let mut ortho = OrthographyEngine::new(script, GlyphStyle::Angular);
+                assert!(!ortho.generate(phono.clone()).is_empty(), "empty orthography for {}", p_key);
+            }
+            for (m_key, morph) in &morphologies {
+                for (s_key, rules) in &sound_changes {
+                    let mut gen = LexiconGenerator::new(phono.clone(), morph.clone(), rules)
+                        .with_syllables(2);
+                    let lexicon = gen.generate_core_lexicon(5);
+                    assert!(!lexicon.0.is_empty(), "no entries for {} / {} / {}", p_key, m_key, s_key);
+                    for (headword, entry) in &lexicon.0 {
+                        assert!(!headword.is_empty(), "empty headword for {} / {} / {}", p_key, m_key, s_key);
+                        assert!(entry.ipa.starts_with('/') && entry.ipa.ends_with('/'), "bad IPA {}", entry.ipa);
+                    }
+                }
+            }
+        }
+    }
+}
+

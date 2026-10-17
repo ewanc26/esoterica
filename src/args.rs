@@ -62,6 +62,19 @@ pub struct Args {
     /// Print sponsor links and exit
     #[arg(long)]
     pub support: bool,
+
+    /// Script type for --generate-orthography (default: alphabet)
+    #[arg(long)]
+    pub script_type: Option<String>,
+
+    /// Glyph style for --generate-orthography (default: angular)
+    #[arg(long)]
+    pub glyph_style: Option<String>,
+
+    /// Directory of user TOML (phonologies.toml, morphologies.toml, syntaxes.toml,
+    /// sound_changes.toml) layered over the built-in catalogues
+    #[arg(long)]
+    pub data_dir: Option<PathBuf>,
 }
 
 impl Args {

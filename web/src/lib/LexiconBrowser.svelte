@@ -16,10 +16,10 @@
   });
 
   // Configuration options, synchronised with data/ TOML files
-  const phonologies = ['eurasia_ie_germanic','eurasia_ie_romance','africa_afroasiatic_semitic','africa_nigercongo_bantu','asia_sinotibetan_sinitic','americas_utoaztecan','oceania_austronesian','uralic_finnic'];
-  const morphologies = ['agglutinative','fusional','analytic','polysynthetic'];
-  const syntaxes = ['svo','sov','vso','vos','ovs','osv'];
-  const soundChanges = ['none','lenition','spirantization','grimms_law','final_devoicing','nasal_assimilation','intervocalic_voicing','vowel_reduction','palatalization','rhotacism','cluster_simplification'];
+  const phonologies = ['africa_afroasiatic_berber','africa_afroasiatic_chadic','africa_afroasiatic_cushitic','africa_afroasiatic_semitic','africa_khoisan_khoe','africa_nigercongo_bantu','africa_nigercongo_mande','africa_nigercongo_yoruboid','africa_nilosaharan_nilotic','americas_algic','americas_arawakan','americas_athabaskan','americas_eskaleut','americas_mayan','americas_otomanguean','americas_quechuan','americas_salishan','americas_siouan','americas_tupian','americas_utoaztecan','asia_austroasiatic_monkhmer','asia_dravidian','asia_hmongmien','asia_japonic','asia_koreanic','asia_mongolic','asia_sinotibetan_burmese','asia_sinotibetan_sinitic','asia_sinotibetan_tibetic','asia_taikadai_tai','asia_tungusic','asia_vietic','caucasus_kartvelian','caucasus_northwestcaucasian','eurasia_ie_albanian','eurasia_ie_armenian','eurasia_ie_baltic','eurasia_ie_celtic','eurasia_ie_germanic','eurasia_ie_hellenic','eurasia_ie_indoaryan','eurasia_ie_iranian','eurasia_ie_romance','eurasia_ie_slavic','eurasia_isolate_basque','eurasia_turkic','oceania_austronesian','oceania_austronesian_polynesian','oceania_pamanyungan','oceania_papuan_transnewguinea','uralic_finnic','uralic_ugric'];
+  const morphologies = ['agglutinative','analytic','circumfixal','fusional','infixing','noun_class_bantu','polysynthetic','reduplicative','root_pattern'];
+  const syntaxes = ['svo','sov','sov_ergative','vso','vos','ovs','osv'];
+  const soundChanges = ['none','bantu_prenasalization','celtic_mutation','cluster_simplification','dravidian_retroflexion','final_devoicing','final_stop_loss','final_vowel_loss','germanic_umlaut','grimms_law','h_loss','intervocalic_voicing','lenition','nasal_assimilation','palatalization','polynesian_merger','rhotacism','slavic_palatalization','spirantization','vowel_reduction'];
 
   // Generate a mock lexicon (WASM integration stubs generate_lexicon)
   async function generate() {

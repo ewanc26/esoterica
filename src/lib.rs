@@ -14,6 +14,7 @@ pub mod syntax;
 pub mod semantic_drift;
 pub mod orthography;
 pub mod collaborative;
+pub mod pipeline;
 
 // ── Feature-Gated Modules ────────────────────────────────────────────────
 

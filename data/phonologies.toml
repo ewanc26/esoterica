@@ -57,3 +57,659 @@ vowels = ["a", "e", "i", "o", "u", "ä", "ö", "y"]
 consonants = ["p", "t", "k", "s", "h", "m", "n", "r", "l", "v", "j"]
 syllable_structure = "CVC"
 vowel_harmony = true
+
+# ── Stylised inventories for further families ──────────────────────────
+# Each entry is a stylised design aid, not an authoritative description of the
+# language. Romanised digraphs (sh, ng, kw) and IPA symbols are both accepted.
+
+[eurasia_ie_slavic]
+# Indo-European, Slavic branch — palatalised consonants, consonant clusters, CCVC
+vowels = ["a", "e", "i", "o", "u", "y"]
+consonants = ["p", "b", "t", "d", "k", "g", "f", "v", "s", "z", "sh", "zh", "m", "n", "r", "l", "j", "ts"]
+syllable_structure = "CCVC"
+vowel_harmony = false
+
+[eurasia_ie_indoaryan]
+# Indo-European, Indo-Aryan branch — aspirated (IPA ʰ/ʱ) and retroflex series, CV(C)
+vowels = ["a", "i", "u", "e", "o"]
+consonants = ["p", "pʰ", "b", "bʱ", "t", "tʰ", "d", "dʱ", "ʈ", "ɖ", "k", "kʰ", "g", "gʱ", "ch", "dʒ", "s", "h", "m", "n", "ɳ", "r", "l", "ɭ", "v", "j"]
+syllable_structure = "CV(C)"
+vowel_harmony = false
+
+[eurasia_ie_celtic]
+# Indo-European, Celtic branch — initial mutation context, CVC
+vowels = ["a", "e", "i", "o", "u"]
+consonants = ["p", "t", "k", "b", "d", "g", "f", "s", "h", "m", "n", "l", "r", "w", "j"]
+syllable_structure = "CVC"
+vowel_harmony = false
+
+[eurasia_ie_iranian]
+# Indo-European, Iranian branch — fricative-rich inventory, CVC
+vowels = ["a", "i", "u", "e", "o"]
+consonants = ["p", "b", "t", "d", "k", "g", "f", "v", "s", "z", "sh", "zh", "x", "gh", "m", "n", "r", "l", "j"]
+syllable_structure = "CVC"
+vowel_harmony = false
+
+[eurasia_turkic]
+# Turkic — eight-vowel system with front/back and rounding harmony, CVC
+vowels = ["a", "e", "ı", "i", "o", "ö", "u", "ü"]
+consonants = ["p", "b", "t", "d", "k", "g", "f", "v", "s", "z", "sh", "ʒ", "ch", "m", "n", "r", "l", "j", "h"]
+syllable_structure = "CVC"
+vowel_harmony = true
+
+[eurasia_isolate_basque]
+# Basque (language isolate) — five-vowel system, sibilant affricates, CV(C)
+vowels = ["a", "e", "i", "o", "u"]
+consonants = ["p", "t", "k", "b", "d", "g", "f", "s", "z", "tx", "tz", "x", "m", "n", "ñ", "l", "ll", "r", "rr", "h"]
+syllable_structure = "(C)V(C)"
+vowel_harmony = false
+
+[caucasus_kartvelian]
+# Kartvelian (Georgian-type) — ejectives and very large clusters, (C)CVCC
+vowels = ["a", "e", "i", "o", "u"]
+consonants = ["p", "b", "p'", "t", "d", "t'", "k", "g", "k'", "q", "ts", "dz", "ts'", "ch", "j", "ch'", "kh", "gh", "sh", "zh", "s", "z", "m", "n", "r", "l", "v", "w", "h"]
+syllable_structure = "CCVCC"
+vowel_harmony = false
+
+[caucasus_northwestcaucasian]
+# Northwest Caucasian (Abkhaz/Circassian-type) — very large consonant inventory, two vowels
+vowels = ["a", "ə"]
+consonants = ["p", "b", "t", "d", "k", "kw", "q", "qw", "ʔ", "p'", "t'", "k'", "q'", "ts", "dz", "tsh", "ch", "sh", "zh", "x", "xw", "h", "hw", "m", "n", "l", "r", "w", "j", "f", "s", "z"]
+syllable_structure = "CCVC"
+vowel_harmony = false
+
+[africa_afroasiatic_berber]
+# Afro-Asiatic, Berber branch — vowel-poor, consonant clusters, CCVC
+vowels = ["a", "i", "u"]
+consonants = ["b", "t", "d", "k", "g", "q", "f", "s", "z", "sh", "zh", "m", "n", "r", "l", "j", "w", "h", "gh", "x"]
+syllable_structure = "CCVC"
+vowel_harmony = false
+
+[africa_afroasiatic_cushitic]
+# Afro-Asiatic, Cushitic branch — glottal and pharyngeal series, CVC
+vowels = ["a", "e", "i", "o", "u"]
+consonants = ["p", "b", "t", "d", "k", "g", "ʔ", "q", "'", "c", "sh", "dh", "x", "h", "ʕ", "m", "n", "r", "l", "w", "j"]
+syllable_structure = "CVC"
+vowel_harmony = false
+
+[africa_nigercongo_yoruboid]
+# Niger-Congo, Yoruboid branch — three lexical tones, labial-velar stops, (C)V(C)
+vowels = ["a", "ɛ", "e", "i", "ɔ", "o", "u"]
+consonants = ["b", "d", "f", "g", "gb", "h", "dʒ", "k", "kp", "l", "m", "n", "p", "r", "s", "sh", "t", "w", "j"]
+syllable_structure = "(C)V(C)"
+tones = 3
+vowel_harmony = false
+
+[africa_nigercongo_mande]
+# Niger-Congo, Mande branch — two tones, nasal-rich consonants, CV(C)
+vowels = ["a", "ɛ", "e", "i", "ɔ", "o", "u"]
+consonants = ["b", "d", "f", "g", "h", "k", "l", "m", "n", "ny", "ng", "s", "t", "w", "j", "dʒ"]
+syllable_structure = "CV(C)"
+tones = 2
+vowel_harmony = false
+
+[africa_nilosaharan_nilotic]
+# Nilo-Saharan, Nilotic branch — tongue-root harmony, tone, CVC
+vowels = ["a", "e", "i", "o", "u", "ɛ", "ɔ"]
+consonants = ["p", "b", "t", "d", "k", "g", "c", "dʒ", "dh", "th", "ng", "ny", "m", "n", "l", "r", "w", "j", "s", "h"]
+syllable_structure = "CVC"
+tones = 2
+vowel_harmony = true
+
+[africa_khoisan_khoe]
+# Khoisan, Khoe branch — click consonants with ATR-style vowels, (C)V
+vowels = ["a", "e", "i", "o", "u"]
+consonants = ["ǀ", "ǁ", "ǃ", "ǂ", "ǀx", "ǁx", "ǃx", "ǂx", "kx", "x", "g", "n", "m", "s", "h", "t", "k", "p", "b", "d", "l", "r", "w"]
+syllable_structure = "(C)V"
+tones = 4
+vowel_harmony = false
+
+[asia_sinotibetan_burmese]
+# Sino-Tibetan, Burmese branch — three tones, creaky codas, CV(C)
+vowels = ["a", "e", "i", "o", "u", "ɛ", "ɔ", "ə"]
+consonants = ["p", "b", "t", "d", "k", "g", "m", "n", "ng", "s", "sh", "h", "l", "r", "w", "j", "ch", "hm"]
+syllable_structure = "CV(C)"
+tones = 3
+vowel_harmony = false
+
+[asia_dravidian]
+# Dravidian — retroflex series and clusters, (C)CV(C)
+vowels = ["a", "e", "i", "o", "u"]
+consonants = ["p", "b", "t", "d", "ʈ", "ɖ", "k", "g", "c", "dʒ", "m", "n", "ɳ", "ɲ", "ŋ", "r", "ɾ", "l", "ɭ", "ɻ", "v", "j", "s", "h"]
+syllable_structure = "(C)CV(C)"
+vowel_harmony = false
+
+[asia_austroasiatic_monkhmer]
+# Austroasiatic, Mon-Khmer type — minor syllables and breathy registers, (C)CVC
+vowels = ["a", "e", "i", "o", "u", "ə", "ɛ", "ɔ", "ɨ"]
+consonants = ["p", "b", "t", "d", "c", "ɟ", "k", "g", "m", "n", "ɲ", "ŋ", "s", "h", "l", "r", "w", "j", "ʔ"]
+syllable_structure = "(C)CVC"
+vowel_harmony = false
+
+[asia_taikadai_tai]
+# Tai-Kadai, Tai branch — five tones and aspirated stops, (C)V(C)
+vowels = ["a", "e", "i", "o", "u", "ɛ", "ɔ", "ɯ", "ɨ"]
+consonants = ["p", "pʰ", "b", "t", "tʰ", "d", "k", "kʰ", "g", "ʔ", "ch", "s", "h", "m", "n", "ng", "l", "r", "w", "j", "f"]
+syllable_structure = "(C)V(C)"
+tones = 5
+vowel_harmony = false
+
+[asia_japonic]
+# Japonic — open moraic syllables, pitch accent approximated, CV(C)
+vowels = ["a", "i", "u", "e", "o"]
+consonants = ["p", "b", "t", "d", "k", "g", "m", "n", "ny", "s", "z", "sh", "dʒ", "h", "f", "ts", "ch", "r", "w", "j"]
+syllable_structure = "CV(C)"
+tones = 2
+vowel_harmony = false
+
+[asia_koreanic]
+# Koreanic — tense/aspirated obstruent triads, (C)V(C)
+vowels = ["a", "e", "i", "o", "u", "ɨ", "ɛ", "ʌ"]
+consonants = ["p", "p'", "pʰ", "t", "t'", "tʰ", "k", "k'", "kʰ", "s", "s'", "c", "c'", "ch", "m", "n", "ng", "h", "l", "r", "w", "j"]
+syllable_structure = "(C)V(C)"
+vowel_harmony = false
+
+[oceania_austronesian_polynesian]
+# Austronesian, Polynesian branch — small inventory, open syllables, CV
+vowels = ["a", "e", "i", "o", "u"]
+consonants = ["p", "t", "k", "f", "h", "m", "n", "ng", "l", "v", "w"]
+syllable_structure = "CV"
+vowel_harmony = false
+
+[oceania_papuan_transnewguinea]
+# Papuan, Trans-New Guinea type — open syllables with occasional codas, (C)V(C)
+vowels = ["a", "e", "i", "o", "u"]
+consonants = ["p", "b", "t", "d", "k", "g", "m", "n", "ny", "ng", "s", "w", "j", "r", "l"]
+syllable_structure = "(C)V(C)"
+vowel_harmony = false
+
+[oceania_pamanyungan]
+# Australian, Pama-Nyungan type — three vowels, laminal and lateral series, CVCV
+vowels = ["a", "i", "u"]
+consonants = ["p", "t", "c", "k", "m", "n", "ny", "ng", "l", "ly", "r", "rr", "w", "j", "th"]
+syllable_structure = "CVCV"
+vowel_harmony = false
+
+[americas_quechuan]
+# Quechuan — three vowels, uvular and ejective series, CV(C)
+vowels = ["a", "i", "u"]
+consonants = ["p", "t", "k", "q", "ch", "s", "h", "m", "n", "ny", "l", "ll", "r", "w", "j", "p'", "t'", "k'", "q'", "ch'"]
+syllable_structure = "CV(C)"
+vowel_harmony = false
+
+[americas_algic]
+# Algic (Algonquian-type) — four vowels, labialised velars, CV(C)
+vowels = ["a", "e", "i", "o"]
+consonants = ["p", "t", "k", "kw", "s", "sh", "h", "m", "n", "w", "j", "l", "r", "ch"]
+syllable_structure = "CV(C)"
+vowel_harmony = false
+
+[americas_salishan]
+# Salishan-type — schwa-based system with very large consonant inventory, CCVC
+vowels = ["ə", "a", "i", "u"]
+consonants = ["p", "t", "k", "q", "kw", "ʔ", "ts", "tl", "tsh", "ch", "x", "xw", "lh", "ł", "m", "n", "l", "w", "j", "s", "sh", "h"]
+syllable_structure = "CCVC"
+vowel_harmony = false
+
+[americas_eskaleut]
+# Eskaleut (Inuit/Yupik-type) — small vowel system, uvular series, CVC
+vowels = ["a", "i", "u"]
+consonants = ["p", "t", "k", "q", "g", "v", "s", "r", "l", "m", "n", "ng", "ʁ", "ɣ", "h"]
+syllable_structure = "CVC"
+vowel_harmony = false
+
+[americas_mayan]
+# Mayan — ejective series with glottalised consonants, CVC
+vowels = ["a", "e", "i", "o", "u"]
+consonants = ["p", "t", "k", "q", "b", "ts", "tz", "ch", "x", "m", "n", "l", "r", "w", "j", "h", "p'", "t'", "k'", "ts'", "ch'"]
+syllable_structure = "CVC"
+vowel_harmony = false
+
+[americas_arawakan]
+# Arawakan — nasal-rich, open syllables with optional coda, CV(C)
+vowels = ["a", "e", "i", "o"]
+consonants = ["p", "t", "k", "b", "d", "ch", "s", "h", "m", "n", "ny", "l", "r", "w", "j"]
+syllable_structure = "CV(C)"
+vowel_harmony = false
+
+[uralic_ugric]
+# Uralic, Ugric branch (Hungarian-type) — front/back and rounding harmony, (C)V(C)
+vowels = ["a", "e", "i", "o", "ö", "u", "ü"]
+consonants = ["p", "b", "t", "d", "k", "g", "f", "v", "s", "z", "sh", "zh", "cs", "dz", "gy", "ny", "ly", "ts", "ch", "m", "n", "r", "l", "j", "h"]
+syllable_structure = "(C)V(C)"
+vowel_harmony = true
+
+# ── Second batch: remaining major branches and tonal families ───────────
+
+[asia_mongolic]
+# Mongolic (Mongolian-type) — eight-vowel harmony system, CVC
+vowels = ["a", "e", "i", "o", "u", "ö", "ü"]
+consonants = ["b", "d", "g", "k", "kh", "l", "m", "n", "ng", "r", "s", "sh", "t", "ch", "dʒ", "h", "j", "v", "ts"]
+syllable_structure = "CVC"
+vowel_harmony = true
+
+[asia_tungusic]
+# Tungusic (Evenki-type) — vowel harmony, CVC
+vowels = ["a", "e", "i", "o", "u", "ə"]
+consonants = ["p", "b", "t", "d", "k", "g", "s", "dʒ", "ng", "m", "n", "l", "r", "v", "j", "h", "x"]
+syllable_structure = "CVC"
+vowel_harmony = true
+
+[asia_sinotibetan_tibetic]
+# Sino-Tibetan, Tibetic branch (Lhasa-type) — two tones, aspirates in IPA, (C)CV(C)
+vowels = ["a", "e", "i", "o", "u", "ö", "ü"]
+consonants = ["p", "pʰ", "b", "t", "tʰ", "d", "k", "kʰ", "g", "ts", "tsʰ", "dz", "s", "z", "ʃ", "ʒ", "h", "m", "n", "ŋ", "l", "r", "w", "j"]
+syllable_structure = "(C)CV(C)"
+tones = 2
+vowel_harmony = false
+
+[asia_hmongmien]
+# Hmong-Mien — eight tones, checked and breathy syllables, (C)V(C)
+vowels = ["a", "e", "i", "o", "u", "ɛ", "ɔ", "ɨ"]
+consonants = ["p", "pʰ", "b", "t", "tʰ", "d", "k", "kʰ", "g", "q", "qʰ", "ʔ", "ts", "tsʰ", "dz", "s", "x", "h", "m", "n", "ny", "ng", "l", "j", "w", "v"]
+syllable_structure = "(C)V(C)"
+tones = 8
+vowel_harmony = false
+
+[asia_vietic]
+# Viet-Muong (Vietnamese-type) — six tones, tense and checked codas, (C)V(C)
+vowels = ["i", "e", "ɛ", "ɯ", "ə", "ɤ", "ɐ", "a", "ɔ", "o", "u"]
+consonants = ["p", "pʰ", "t", "tʰ", "k", "kʰ", "ʔ", "b", "d", "m", "n", "ng", "ny", "f", "v", "s", "z", "x", "gh", "h", "ch", "tr", "l", "r", "w", "j"]
+syllable_structure = "(C)V(C)"
+tones = 6
+vowel_harmony = false
+
+[africa_afroasiatic_chadic]
+# Afro-Asiatic, Chadic branch (Hausa-type) — implosives, two tones, CVC
+vowels = ["a", "i", "u", "e", "o"]
+consonants = ["b", "ɓ", "d", "ɗ", "k", "ƙ", "g", "kw", "f", "s", "z", "sh", "dʒ", "h", "m", "n", "r", "l", "w", "j", "t", "ts"]
+syllable_structure = "CVC"
+tones = 2
+vowel_harmony = false
+
+[americas_athabaskan]
+# Na-Dene, Athabaskan (Navajo-type) — ejectives, aspirates and lateral fricatives, CV(C)
+vowels = ["a", "e", "i", "o", "u"]
+consonants = ["t", "tʼ", "tʰ", "ts", "tsʼ", "tsʰ", "tɬ", "tɬʼ", "k", "kʼ", "kʰ", "kw", "x", "xw", "h", "ɬ", "s", "sh", "z", "ʔ", "d", "n", "m", "l", "j", "w"]
+syllable_structure = "CV(C)"
+tones = 2
+vowel_harmony = false
+
+[americas_otomanguean]
+# Oto-Manguean (Otomi/Mazatec-type) — four tones, CV
+vowels = ["a", "e", "i", "o", "u", "ɨ", "ə"]
+consonants = ["p", "t", "k", "kw", "ʔ", "b", "d", "g", "m", "n", "ny", "ng", "s", "sh", "x", "h", "ch", "l", "r", "j", "w", "ts"]
+syllable_structure = "CV"
+tones = 4
+vowel_harmony = false
+
+[americas_tupian]
+# Tupian (Tupí-Guaraní-type) — nasal vowels omitted, open syllables, CV
+vowels = ["a", "e", "i", "o", "u", "ɨ"]
+consonants = ["p", "t", "k", "ʔ", "b", "d", "g", "m", "n", "ng", "s", "sh", "zh", "h", "r", "j", "w", "v"]
+syllable_structure = "CV"
+vowel_harmony = false
+
+[americas_siouan]
+# Siouan (Lakota-type) — aspirated stops and glottal stop, CVC
+vowels = ["a", "e", "i", "o", "u"]
+consonants = ["p", "pʰ", "t", "tʰ", "k", "kʰ", "ʔ", "s", "sh", "x", "h", "m", "n", "j", "w", "ch", "z"]
+syllable_structure = "CVC"
+vowel_harmony = false
+
+[eurasia_ie_hellenic]
+# Indo-European, Hellenic branch (Classical Greek-type) — clusters, aspirates, CCVC
+vowels = ["a", "e", "i", "o", "u"]
+consonants = ["p", "b", "t", "d", "k", "g", "ph", "th", "kh", "f", "s", "z", "m", "n", "l", "r", "w", "j"]
+syllable_structure = "CCVC"
+vowel_harmony = false
+
+[eurasia_ie_baltic]
+# Indo-European, Baltic branch (Lithuanian-type) — palatalised series, CVC
+vowels = ["a", "e", "i", "o", "u"]
+consonants = ["p", "b", "t", "d", "k", "g", "f", "v", "s", "z", "sh", "zh", "m", "n", "l", "r", "j", "h"]
+syllable_structure = "CVC"
+vowel_harmony = false
+
+[eurasia_ie_armenian]
+# Indo-European, Armenian branch — aspirate and ejective-style triads, CVC
+vowels = ["a", "e", "i", "o", "u", "ə"]
+consonants = ["p", "pʰ", "b", "t", "tʰ", "d", "k", "kʰ", "g", "ts", "tsʰ", "dz", "tʃ", "dʒ", "f", "v", "s", "z", "ʃ", "ʒ", "x", "h", "m", "n", "l", "r", "w", "j"]
+syllable_structure = "CVC"
+vowel_harmony = false
+
+[eurasia_ie_albanian]
+# Indo-European, Albanian branch (isolated branch) — front rounded vowels, CCVC
+vowels = ["a", "e", "ë", "i", "o", "u", "y"]
+consonants = ["p", "b", "t", "d", "k", "g", "q", "gj", "f", "v", "th", "dh", "s", "z", "sh", "zh", "x", "gh", "c", "xh", "nj", "m", "n", "r", "rr", "l", "ll", "j", "h"]
+syllable_structure = "(C)CVC"
+vowel_harmony = false
+
+# ── Third batch: families previously listed as gaps ─────────────────────
+
+[caucasus_nakh_dagestanian]
+# Nakh-Dagestanian (Chechen-type) — ejectives, uvulars, front rounded vowels, CCVC
+vowels = ["a", "e", "i", "o", "u", "ä", "ö"]
+consonants = ["p", "b", "t", "d", "k", "g", "q", "ʔ", "p'", "t'", "k'", "q'", "ts", "dz", "ts'", "ch", "dʒ", "sh", "zh", "x", "xw", "h", "m", "n", "l", "r", "w", "j", "s", "z", "f", "ʕ"]
+syllable_structure = "CCVC"
+vowel_harmony = false
+
+[africa_nigercongo_atlantic]
+# Niger-Congo, Atlantic branch (Wolof-type) — implosive-free, labiovelars, CVC
+vowels = ["a", "e", "ɛ", "i", "o", "ɔ", "u"]
+consonants = ["p", "b", "t", "d", "c", "dʒ", "k", "g", "kw", "gw", "f", "s", "m", "n", "ny", "ng", "l", "r", "w", "j", "h"]
+syllable_structure = "CVC"
+vowel_harmony = false
+
+[africa_nigercongo_gur]
+# Niger-Congo, Gur branch (Mooré-type) — three tones, labial-velar stops, (C)V(C)
+vowels = ["a", "e", "ɛ", "i", "o", "ɔ", "u"]
+consonants = ["b", "d", "g", "k", "kp", "gb", "f", "v", "s", "z", "m", "n", "ny", "ng", "l", "r", "w", "j", "h", "t", "p"]
+syllable_structure = "(C)V(C)"
+tones = 3
+vowel_harmony = false
+
+[africa_nigercongo_kwa]
+# Niger-Congo, Kwa branch (Akan-type) — two tones, labial-velar stops, CV(C)
+vowels = ["i", "e", "ɛ", "a", "ɔ", "o", "u"]
+consonants = ["p", "b", "t", "d", "k", "g", "kp", "gb", "f", "v", "s", "h", "m", "n", "ny", "ng", "l", "r", "w", "j"]
+syllable_structure = "CV(C)"
+tones = 2
+vowel_harmony = true
+
+[africa_nilosaharan_saharan]
+# Nilo-Saharan, Saharan branch (Kanuri-type) — implosives, vowel length suppressed, CV(C)
+vowels = ["a", "e", "i", "o", "u", "ɛ", "ɔ"]
+consonants = ["b", "ɓ", "d", "ɗ", "g", "k", "p", "t", "c", "dʒ", "m", "n", "ng", "r", "l", "w", "j", "s", "z", "h", "f"]
+syllable_structure = "CV(C)"
+vowel_harmony = false
+
+[africa_songhai]
+# Songhay (isolate) — two tones, labial-velar stops, CVC
+vowels = ["a", "e", "i", "o", "u", "ɛ", "ɔ", "ɨ"]
+consonants = ["p", "b", "t", "d", "k", "g", "kw", "gw", "f", "s", "z", "h", "m", "n", "ny", "ng", "r", "l", "w", "j"]
+syllable_structure = "CVC"
+tones = 2
+vowel_harmony = false
+
+[africa_afroasiatic_omotic]
+# Afro-Asiatic, Omotic branch (Wolaytta-type) — ejectives and affricates, CVC
+vowels = ["a", "e", "i", "o", "u"]
+consonants = ["p", "p'", "t", "t'", "k", "k'", "q", "ʔ", "ts", "ts'", "ch", "ch'", "dʒ", "f", "s", "z", "sh", "x", "h", "m", "n", "l", "r", "w", "j"]
+syllable_structure = "CVC"
+vowel_harmony = false
+
+[eurasia_isolate_ainu]
+# Ainu (isolate) — small inventory, open syllables with few codas, CV(C)
+vowels = ["a", "e", "i", "o", "u"]
+consonants = ["p", "t", "k", "ch", "s", "h", "m", "n", "r", "w", "j"]
+syllable_structure = "CV(C)"
+vowel_harmony = false
+
+[eurasia_isolate_yeniseian]
+# Yeniseian (Ket-type) — two tones, sibilant affricates, CVC
+vowels = ["a", "e", "i", "o", "u", "ə", "ɨ"]
+consonants = ["p", "b", "t", "d", "k", "g", "q", "ʔ", "ts", "dz", "ch", "dʒ", "s", "z", "sh", "x", "h", "m", "n", "ng", "l", "r", "j", "w"]
+syllable_structure = "CVC"
+tones = 2
+vowel_harmony = false
+
+[oceania_australian_gunwinyguan]
+# Australian, non-Pama-Nyungan (Gunwinyguan-type) — three vowels, retroflex series, CVCV
+vowels = ["a", "i", "u"]
+consonants = ["p", "t", "c", "k", "m", "n", "ny", "ng", "l", "r", "w", "j", "ɭ", "ɳ", "ɖ"]
+syllable_structure = "CVCV"
+vowel_harmony = false
+
+[eurasia_isolate_nivkh]
+# Nivkh (isolate) — uvular series, sibilants, CVC
+vowels = ["a", "e", "i", "o", "u"]
+consonants = ["p", "t", "k", "q", "m", "n", "ng", "l", "r", "s", "sh", "x", "j", "w", "ts", "ch"]
+syllable_structure = "CVC"
+vowel_harmony = false
+
+[asia_isolate_burushaski]
+# Burushaski (isolate) — retroflex and uvular series, clusters, (C)CVC
+vowels = ["a", "e", "i", "o", "u", "ə"]
+consonants = ["p", "b", "t", "d", "k", "g", "q", "ʔ", "ts", "dz", "ch", "dʒ", "s", "z", "sh", "zh", "x", "h", "m", "n", "ng", "l", "r", "w", "j", "f", "ʈ", "ɖ"]
+syllable_structure = "(C)CVC"
+vowel_harmony = false
+
+# ── Fourth batch: further families, creoles and constructed systems ─────
+
+[americas_iroquoian]
+# Iroquoian (Cherokee-type) — laryngeals, nasalised vowels approximated, CV(C)
+vowels = ["a", "e", "i", "o", "u", "ə"]
+consonants = ["t", "d", "k", "g", "ts", "dl", "s", "h", "w", "j", "m", "n"]
+syllable_structure = "CV(C)"
+tones = 2
+vowel_harmony = false
+
+[americas_chibchan]
+# Chibchan (Bribri/Kogi-type) — tones, nasals, CV(C)
+vowels = ["a", "e", "i", "o", "u", "ɨ"]
+consonants = ["p", "b", "t", "d", "k", "g", "ts", "s", "sh", "x", "h", "m", "n", "ny", "ng", "l", "r", "w", "j"]
+syllable_structure = "CV(C)"
+tones = 2
+vowel_harmony = false
+
+[americas_panotacanan]
+# Pano-Tacanan (Shipibo-type) — retroflex-free, nasal-rich, CV(C)
+vowels = ["a", "e", "i", "o", "u", "ɨ"]
+consonants = ["p", "t", "k", "b", "d", "g", "ts", "ch", "s", "sh", "h", "m", "n", "r", "w", "j"]
+syllable_structure = "CV(C)"
+vowel_harmony = false
+
+[americas_je]
+# Jê (Kayapó-type) — stops, nasals, prenasalised stops, CV
+vowels = ["a", "e", "i", "o", "u", "ɨ"]
+consonants = ["p", "t", "k", "mp", "nt", "ŋk", "b", "d", "g", "m", "n", "ng", "s", "h", "r", "w", "j"]
+syllable_structure = "CV"
+vowel_harmony = false
+
+[americas_aymaran]
+# Aymaran (Aymara-type) — three vowels, ejectives, uvulars, CV(C)
+vowels = ["a", "i", "u"]
+consonants = ["p", "t", "k", "q", "ch", "s", "h", "m", "n", "ny", "l", "ll", "w", "j", "p'", "t'", "k'", "q'", "ch'"]
+syllable_structure = "CV(C)"
+vowel_harmony = false
+
+[americas_tucanoan]
+# Tucanoan (Tukano-type) — nasal and oral stops, tone-free, CV(C)
+vowels = ["a", "e", "i", "o", "u", "ɨ", "ɛ"]
+consonants = ["p", "t", "k", "b", "d", "g", "s", "h", "m", "n", "ny", "w", "j", "r"]
+syllable_structure = "CV(C)"
+vowel_harmony = false
+
+[eurasia_uralic_samoyedic]
+# Uralic, Samoyedic branch (Nenets-type) — minimal vowel system, sibilant series, CV(C)
+vowels = ["a", "e", "i", "o", "u", "ɨ", "ə"]
+consonants = ["p", "t", "k", "q", "m", "n", "ng", "l", "r", "s", "sh", "h", "w", "j", "ts", "ch"]
+syllable_structure = "CV(C)"
+vowel_harmony = true
+
+[eurasia_chukotko_kamchatkan]
+# Chukotko-Kamchatkan (Chukchi-type) — large consonant inventory, polysynthetic clusters, CCVC
+vowels = ["a", "e", "i", "o", "u", "ə"]
+consonants = ["p", "t", "k", "q", "ʔ", "l", "ɬ", "m", "n", "ng", "r", "ɣ", "x", "s", "sh", "ch", "w", "j", "v", "ts", "tl", "ł", "h"]
+syllable_structure = "CCVC"
+vowel_harmony = false
+
+[asia_austronesian_malayo]
+# Austronesian, Malayo-Polynesian (Malay/Indonesian-type) — open syllables, CVC
+vowels = ["a", "e", "i", "o", "u", "ə"]
+consonants = ["p", "b", "t", "d", "k", "g", "c", "dʒ", "m", "n", "ny", "ng", "s", "h", "l", "r", "w", "j"]
+syllable_structure = "CVC"
+vowel_harmony = false
+
+[asia_austronesian_philippine]
+# Austronesian, Philippine branch (Tagalog-type) — infixation-friendly, CV(C)
+vowels = ["a", "e", "i", "o", "u"]
+consonants = ["p", "b", "t", "d", "k", "g", "m", "n", "ng", "s", "h", "l", "r", "w", "j"]
+syllable_structure = "CV(C)"
+vowel_harmony = false
+
+[oceania_austronesian_malagasy]
+# Austronesian, Barito branch (Malagasy-type) — prenasalised stops, open syllables, CV
+vowels = ["a", "e", "i", "o", "u"]
+consonants = ["p", "b", "t", "d", "k", "g", "mb", "nd", "ng", "ndr", "f", "v", "s", "h", "m", "n", "l", "r", "j", "tr", "dr", "ts"]
+syllable_structure = "CV"
+vowel_harmony = false
+
+[oceania_papuan_sepik]
+# Papuan, Sepik type — stops, prenasalised consonants, CVC
+vowels = ["a", "e", "i", "o", "u", "ə"]
+consonants = ["p", "b", "t", "d", "k", "g", "mb", "nd", "ng", "m", "n", "s", "h", "l", "r", "w", "j", "ts", "f"]
+syllable_structure = "CVC"
+vowel_harmony = false
+
+[africa_khoisan_tuu]
+# Khoisan, Tuu branch (ǃUng-type) — click-heavy consonants, CV
+vowels = ["a", "e", "i", "o", "u"]
+consonants = ["ǀ", "ǁ", "ǃ", "ǂ", "ǀ'", "ǁ'", "ǃ'", "ǂ'", "k", "x", "t", "p", "m", "n", "s", "h", "l", "r", "w", "j"]
+syllable_structure = "CV"
+tones = 2
+vowel_harmony = false
+
+[africa_nigercongo_ubangian]
+# Niger-Congo, Ubangian (Sango-type) — open syllables, CV
+vowels = ["a", "e", "i", "o", "u", "ɛ", "ɔ"]
+consonants = ["p", "b", "t", "d", "k", "g", "kp", "gb", "f", "v", "s", "m", "n", "ny", "l", "r", "w", "j", "h"]
+syllable_structure = "CV"
+vowel_harmony = false
+
+[creole_tok_pisin]
+# Creole, Austronesian-lexified (Tok Pisin-type) — open syllables, CV
+vowels = ["a", "e", "i", "o", "u"]
+consonants = ["p", "b", "t", "d", "k", "g", "f", "s", "h", "m", "n", "ng", "l", "r", "w", "j", "ts", "tr", "dr"]
+syllable_structure = "CV(C)"
+vowel_harmony = false
+
+[creole_haitian]
+# Creole, French-lexified (Haitian-type) — nasal vowels approximated, CV(C)
+vowels = ["a", "e", "ɛ", "i", "o", "ɔ", "u", "ə"]
+consonants = ["p", "b", "t", "d", "k", "g", "f", "v", "s", "z", "ch", "dj", "m", "n", "ny", "l", "r", "w", "j", "h"]
+syllable_structure = "CV(C)"
+vowel_harmony = false
+
+[constructed_toki_pona]
+# Constructed language (Toki Pona-type) — minimal phonotactics, CV
+vowels = ["a", "e", "i", "o", "u"]
+consonants = ["p", "t", "k", "s", "m", "n", "l", "j", "w"]
+syllable_structure = "CV"
+vowel_harmony = false
+
+[constructed_esperanto]
+# Constructed language (Esperanto-type) — Romance-like inventory, CV(C)
+vowels = ["a", "e", "i", "o", "u"]
+consonants = ["p", "b", "t", "d", "k", "g", "f", "v", "s", "z", "sh", "zh", "ts", "ch", "dj", "h", "m", "n", "l", "r", "j"]
+syllable_structure = "CV(C)"
+vowel_harmony = false
+
+# ── Fifth batch: gaps found against Glottolog's family and isolate list ──
+
+[africa_khoisan_hadza]
+# Hadza (isolate) — click consonants, CV(C)
+vowels = ["a", "e", "i", "o", "u"]
+consonants = ["ǃ", "ǀ", "ǁ", "k", "kʼ", "t", "tʼ", "p", "b", "d", "g", "s", "h", "m", "n", "l", "r", "w", "j", "ts", "q", "x"]
+syllable_structure = "CV(C)"
+vowel_harmony = false
+
+[africa_khoisan_sandawe]
+# Sandawe (isolate) — click consonants with aspiration, CV
+vowels = ["a", "e", "i", "o", "u"]
+consonants = ["ǃ", "ǃʰ", "ǀ", "ǁ", "k", "t", "p", "b", "d", "g", "s", "z", "h", "m", "n", "r", "l", "w", "j", "ts"]
+syllable_structure = "CV"
+vowel_harmony = false
+
+[asia_isolate_kusunda]
+# Kusunda (isolate, Nepal) — aspirates and palatal affricates, CV(C), two tones
+vowels = ["a", "e", "i", "o", "u"]
+consonants = ["p", "pʰ", "b", "t", "tʰ", "d", "k", "kʰ", "g", "c", "ch", "s", "h", "m", "n", "ny", "ng", "r", "l", "w", "j"]
+syllable_structure = "CV(C)"
+tones = 2
+vowel_harmony = false
+
+[americas_wakashan]
+# Wakashan (Kwakwaka'wakw-type) — very large consonant inventory, uvulars, schwa, CCVC
+vowels = ["ə", "a", "i", "o", "u"]
+consonants = ["p", "t", "k", "kʷ", "q", "qʷ", "ʔ", "p'", "t'", "k'", "q'", "ts", "tɬ", "tʃ", "x", "xʷ", "χ", "h", "m", "n", "l", "w", "j", "s", "ɬ"]
+syllable_structure = "CCVC"
+vowel_harmony = false
+
+[americas_muskogean]
+# Muskogean (Creek-type) — four stops series, CVC
+vowels = ["a", "e", "i", "o"]
+consonants = ["p", "t", "k", "kw", "c", "f", "s", "h", "l", "m", "n", "w", "j", "hl"]
+syllable_structure = "CVC"
+vowel_harmony = false
+
+[americas_caddoan]
+# Caddoan (Pawnee-type) — glottal stop, flapped r, CV(C)
+vowels = ["a", "e", "i", "o", "u"]
+consonants = ["p", "t", "k", "ʔ", "c", "r", "s", "h", "w", "j", "m", "n"]
+syllable_structure = "CV(C)"
+vowel_harmony = false
+
+[americas_yuman]
+# Yuman (Mojave-type) — uvular and labialised velars, CV(C)
+vowels = ["a", "e", "i", "o", "u"]
+consonants = ["p", "t", "k", "kʷ", "q", "m", "n", "ny", "ng", "s", "h", "x", "ʔ", "l", "r", "w", "j", "tʃ"]
+syllable_structure = "CV(C)"
+vowel_harmony = false
+
+[americas_mixezoque]
+# Mixe-Zoque (Mixe-type) — labialised velars and sibilants, CV(C)
+vowels = ["a", "e", "i", "o", "u", "ə"]
+consonants = ["p", "t", "k", "kʷ", "ʔ", "b", "d", "g", "m", "n", "ny", "ng", "s", "sh", "x", "h", "ts", "tʃ", "l", "r", "w", "j"]
+syllable_structure = "CV(C)"
+vowel_harmony = false
+
+[americas_totonacan]
+# Totonacan (Totonac-type) — lateral affricates, small vowel set, CVC
+vowels = ["a", "i", "u"]
+consonants = ["p", "t", "k", "q", "ts", "tɬ", "ɬ", "s", "x", "h", "m", "n", "l", "w", "j", "ʔ"]
+syllable_structure = "CVC"
+vowel_harmony = false
+
+[americas_mura]
+# Mura (Pirahã-type) — very small inventory, open syllables
+vowels = ["a", "e", "i", "o", "u"]
+consonants = ["p", "t", "k", "b", "g", "s", "h", "m", "n", "j", "w", "ʔ"]
+syllable_structure = "CV"
+vowel_harmony = false
+
+[americas_mapuche]
+# Mapuche (Mapudungun isolate) — retroflex-like laterals and palatal nasals, CV(C)
+vowels = ["a", "e", "i", "o", "u"]
+consonants = ["p", "t", "k", "tr", "ch", "ll", "ñ", "ng", "m", "n", "l", "r", "w", "j", "f", "s", "ʔ", "h"]
+syllable_structure = "CV(C)"
+vowel_harmony = false
+
+[oceania_papuan_angan]
+# Papuan, Angan family (Ankave-type) — prenasalised stops, CV(C)
+vowels = ["a", "e", "i", "o", "u"]
+consonants = ["p", "b", "t", "d", "k", "g", "m", "n", "ng", "s", "h", "l", "r", "w", "j", "f", "v"]
+syllable_structure = "CV(C)"
+vowel_harmony = false
+
+[oceania_australian_nyulnyulan]
+# Australian, Nyulnyulan (Nyulnyul-type) — laminals and retroflex series, CVC
+vowels = ["a", "i", "u"]
+consonants = ["p", "b", "t", "d", "k", "g", "c", "dʒ", "m", "n", "ny", "ng", "l", "rr", "r", "w", "j"]
+syllable_structure = "CVC"
+vowel_harmony = false
+
+[asia_austroasiatic_munda]
+# Austroasiatic, Munda branch (Santali-type) — retroflex stops and vowel contrasts, CV(C)
+vowels = ["a", "e", "i", "o", "u", "ɔ", "ɛ"]
+consonants = ["p", "b", "t", "d", "ʈ", "ɖ", "c", "j", "k", "g", "m", "n", "ɲ", "ŋ", "s", "h", "r", "l", "w", "j"]
+syllable_structure = "CV(C)"
+vowel_harmony = false
+
+[eurasia_ie_italic]
+# Indo-European, Italic branch (Latin-type) — labialised velars, CVC
+vowels = ["a", "e", "i", "o", "u"]
+consonants = ["p", "b", "t", "d", "k", "g", "kw", "gw", "f", "s", "m", "n", "l", "r", "w", "j", "h"]
+syllable_structure = "CVC"
+vowel_harmony = false

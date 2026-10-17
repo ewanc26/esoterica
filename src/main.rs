@@ -8,11 +8,8 @@ use color_eyre::eyre::Result as EyreResult;
 use color_eyre::eyre::{Context, ContextCompat};
 use bsky_sdk::BskyAgent;
 use std::path::PathBuf;
-use esoterica::archetypes;
-use esoterica::lexicon;
 use esoterica::semantic_drift;
 use esoterica::orthography;
-use esoterica::syntax::SyntaxEngine;
 use esoterica::lexicon_structs;
 
 #[tokio::main]
@@ -37,38 +34,29 @@ async fn main() -> EyreResult<()> {
         return Ok(());
     }
 
-    // ── Load Component Registries ───────────────────────────────────────────
+    // ── Resolve Configuration ───────────────────────────────────────────────
 
-    let phono_reg = archetypes::get_phonology_registry();
-    let sc_reg = archetypes::get_sound_change_registry();
-    let morph_reg = archetypes::get_morphology_registry();
-    let syntax_reg = archetypes::get_syntax_registry();
+    let registries = match &args.data_dir {
+        Some(dir) => esoterica::pipeline::Registries::builtin()
+            .with_user_dir(dir)
+            .map_err(|e| color_eyre::eyre::eyre!("Invalid user data in {}:\n{}", dir.display(), e))?,
+        None => esoterica::pipeline::Registries::builtin(),
+    };
 
     let phono_key = args.phonology.first().context("Phonology is required")?;
     let morph_key = args.morphology.first().context("Morphology is required")?;
-    let syntax_key = args.syntax.context("Syntax is required")?;
+    let syntax_key = args.syntax.as_deref().context("Syntax is required")?;
 
-    let phono = phono_reg.get(phono_key)
-        .ok_or_else(|| color_eyre::eyre::eyre!("Unknown phonology: {}", phono_key))?.clone();
-    let morph = morph_reg.get(morph_key)
-        .ok_or_else(|| color_eyre::eyre::eyre!("Unknown morphology: {}", morph_key))?.clone();
+    let mut spec = registries
+        .spec(phono_key, morph_key, syntax_key, &args.sound_change)
+        .map_err(|e| color_eyre::eyre::eyre!(e))?;
+    spec.lexicon_size = args.lexicon_size.unwrap_or(100);
+    spec.syllables = args.syllables.unwrap_or(2);
 
-    // Merge multiple sound-change rule sets (e.g. lenition + palatalization)
-    let mut merged_sc = Vec::new();
-    for key in &args.sound_change {
-        if let Some(sc) = sc_reg.get(key) {
-            merged_sc.extend(sc.clone());
-        }
-    }
+    // ── Generation ──────────────────────────────────────────────────────────
 
-    let syntax = syntax_reg.get(&syntax_key)
-        .ok_or_else(|| color_eyre::eyre::eyre!("Unknown syntax: {}", syntax_key))?.clone();
-
-    // ── Lexicon Generation ──────────────────────────────────────────────────
-
-    let mut generator = lexicon::LexiconGenerator::new(phono.clone(), morph, merged_sc)
-        .with_syllables(args.syllables.unwrap_or(2));
-    let mut lexicon = generator.generate_core_lexicon(args.lexicon_size.unwrap_or(100)).clone();
+    let generated = spec.generate().map_err(|e| color_eyre::eyre::eyre!(e))?;
+    let mut lexicon = generated.lexicon;
 
     // ── Semantic Drift ──────────────────────────────────────────────────────
 
@@ -86,11 +74,12 @@ async fn main() -> EyreResult<()> {
     // ── Orthography ─────────────────────────────────────────────────────────
 
     if args.generate_orthography {
-        let mut ortho = orthography::OrthographyEngine::new(
-            orthography::ScriptType::Alphabet,
-            orthography::GlyphStyle::Angular,
-        );
-        let mapping = ortho.generate(phono);
+        let script = orthography::ScriptType::parse(args.script_type.as_deref().unwrap_or("alphabet"))
+            .map_err(|e| color_eyre::eyre::eyre!(e))?;
+        let style = orthography::GlyphStyle::parse(args.glyph_style.as_deref().unwrap_or("angular"))
+            .map_err(|e| color_eyre::eyre::eyre!(e))?;
+        let mut ortho = orthography::OrthographyEngine::new(script, style);
+        let mapping = ortho.generate(spec.phonology.clone());
         println!("Generated orthography with {} glyphs", mapping.len());
         let ortho_path = make_ortho_path(args.output.as_ref());
         let json = serde_json::to_string_pretty(&mapping)
@@ -126,13 +115,7 @@ async fn main() -> EyreResult<()> {
         println!("Published dictionary document to ATProto: {}", uri);
     }
 
-    // ── Example Sentence ────────────────────────────────────────────────────
-
-    let syntax_engine = SyntaxEngine::new(syntax);
-    let sentence = syntax_engine.generate_sentence(&[
-        "word1".to_string(), "word2".to_string(), "word3".to_string()
-    ]);
-    println!("Example sentence: {}", sentence);
+    println!("Example sentence: {}", generated.example_sentence);
     Ok(())
 }
 

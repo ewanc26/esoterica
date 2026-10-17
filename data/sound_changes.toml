@@ -1,82 +1,67 @@
-# Legacy rule sets for the sound change engine.
-# Each set is an array of { pattern, replacement, context } objects.
-# Context can be "word_initial", "word_final", or omitted for unconditional replacement.
-# For the formal parser (p > b / V_V), use the API in sound_change.rs instead.
+# Sound-change rule sets in formal notation: "FROM > TO / LEFT_RIGHT".
+# Rules in a set apply in order. Context symbols: # = word boundary, V = vowel,
+# C = consonant, or a literal segment. ∅ = deletion.
+# These are stylised diachronic patterns, not reconstructions of attested changes.
 
 none = []
 
+# ── Cross-family, general-purpose changes ───────────────────────────────
+
 # Final obstruent voicing (Celtic-style lenition)
-lenition = [
-    { pattern = "p", replacement = "b", context = "word_final" },
-    { pattern = "t", replacement = "d", context = "word_final" },
-    { pattern = "k", replacement = "g", context = "word_final" },
-]
+lenition = ["p > b / _#", "t > d / _#", "k > g / _#"]
 
 # Final stops become fricatives
-spirantization = [
-    { pattern = "k", replacement = "h", context = "word_final" },
-    { pattern = "p", replacement = "f", context = "word_final" },
-    { pattern = "t", replacement = "s", context = "word_final" },
-]
+spirantization = ["k > h / _#", "p > f / _#", "t > s / _#"]
 
 # Germanic-style consonant shift (Grimm's Law subset)
-grimms_law = [
-    { pattern = "p", replacement = "f" },
-    { pattern = "t", replacement = "th" },
-    { pattern = "k", replacement = "h" },
-]
+grimms_law = ["p > f", "t > θ", "k > h"]
 
 # Final obstruent devoicing (like German/Russian)
-final_devoicing = [
-    { pattern = "b", replacement = "p", context = "word_final" },
-    { pattern = "d", replacement = "t", context = "word_final" },
-    { pattern = "g", replacement = "k", context = "word_final" },
-    { pattern = "v", replacement = "f", context = "word_final" },
-    { pattern = "z", replacement = "s", context = "word_final" },
-]
+final_devoicing = ["b > p / _#", "d > t / _#", "g > k / _#", "v > f / _#", "z > s / _#"]
 
-# Nasal place assimilation
-nasal_assimilation = [
-    { pattern = "n", replacement = "m", context = "word_final" },
-    { pattern = "np", replacement = "mp" },
-    { pattern = "nk", replacement = "ngk" },
-    { pattern = "nb", replacement = "mb" },
-]
+# Nasal place assimilation before stops
+nasal_assimilation = ["n > m / _p", "n > m / _b", "n > ŋ / _k", "n > ŋ / _g"]
 
 # Intervocalic voicing (lenition between vowels)
-intervocalic_voicing = [
-    { pattern = "p", replacement = "b" },
-    { pattern = "t", replacement = "d" },
-    { pattern = "k", replacement = "g" },
-    { pattern = "s", replacement = "z" },
-    { pattern = "f", replacement = "v" },
-]
+intervocalic_voicing = ["p > b / V_V", "t > d / V_V", "k > g / V_V", "s > z / V_V", "f > v / V_V"]
 
-# Vowel reduction in unstressed positions
-vowel_reduction = [
-    { pattern = "a", replacement = "e", context = "word_final" },
-    { pattern = "o", replacement = "e", context = "word_final" },
-    { pattern = "u", replacement = "i", context = "word_final" },
-]
+# Unstressed word-final vowels reduce
+vowel_reduction = ["a > e / _#", "o > e / _#", "u > i / _#"]
 
-# Palatalization before front vowels
-palatalization = [
-    { pattern = "k", replacement = "ch" },
-    { pattern = "g", replacement = "j" },
-    { pattern = "t", replacement = "ch" },
-    { pattern = "s", replacement = "sh" },
-]
+# Palatalization before front vowels only
+palatalization = ["k > ch / _i", "g > j / _i", "t > ch / _i", "s > sh / _i"]
 
 # Rhotacism (s > r between vowels, as in Latin/Germanic)
-rhotacism = [
-    { pattern = "s", replacement = "r" },
-    { pattern = "z", replacement = "r" },
-]
+rhotacism = ["s > r / V_V", "z > r / V_V"]
 
 # Cluster simplification
-cluster_simplification = [
-    { pattern = "pt", replacement = "t" },
-    { pattern = "kt", replacement = "t" },
-    { pattern = "mn", replacement = "n" },
-    { pattern = "mb", replacement = "m", context = "word_final" },
-]
+cluster_simplification = ["pt > t", "kt > t", "mn > n", "mb > m / _#"]
+
+# ── Family-oriented sets ────────────────────────────────────────────────
+
+# Germanic i-umlaut before a following /i/
+germanic_umlaut = ["a > æ / _i", "u > y / _i", "o > ö / _i"]
+
+# Romance-style loss of word-final vowels after a consonant
+final_vowel_loss = ["a > ∅ / C_#", "o > ∅ / C_#", "e > ∅ / C_#"]
+
+# Celtic initial consonant mutation after a vowel
+celtic_mutation = ["p > f / V_", "t > th / V_", "k > kh / V_"]
+
+# Slavic second palatalization before /i/
+slavic_palatalization = ["k > č / _i", "g > ʒ / _i"]
+
+# Bantu-style prenasalisation
+bantu_prenasalization = ["b > mb", "d > nd", "g > ŋg"]
+
+# Final stop loss, as in many Sinitic and Mon-Khmer histories
+final_stop_loss = ["p > ∅ / _#", "t > ∅ / _#", "k > ∅ / _#"]
+
+# Glottal loss of /h/ word-finally
+h_loss = ["h > ∅ / _#"]
+
+# Polynesian-style merger of r into l and ng into n
+polynesian_merger = ["r > l", "ng > n"]
+
+# Dravidian-style retroflexion of alveolars between vowels
+dravidian_retroflexion = ["t > ʈ / V_V", "d > ɖ / V_V", "n > ɳ / V_V", "l > ɭ / V_V"]

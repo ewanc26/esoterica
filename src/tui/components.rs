@@ -8,7 +8,11 @@ use ratatui::{
     Frame,
 };
 use crossterm::event::KeyCode;
-use crate::archetypes;
+use std::collections::BTreeSet;
+use crate::pipeline::Registries;
+
+/// Phonology list entry that selects the phonology built in the designer.
+pub const CUSTOM_PHONOLOGY: &str = "(custom designer)";
 
 /// Common interface for TUI widget components.
 pub trait Component {
@@ -16,10 +20,20 @@ pub trait Component {
     fn render(&self, f: &mut Frame, area: ratatui::layout::Rect);
 }
 
+/// The configuration chosen in the four panels.
+#[derive(Debug, Clone, PartialEq)]
+pub struct Selection {
+    pub phonology: String,
+    pub morphology: String,
+    pub syntax: String,
+    /// Sound-change set keys, in alphabetical order.
+    pub sound_changes: Vec<String>,
+}
+
 // ── Config Selection Panel ──────────────────────────────────────────────
 
 /// Four-column config browser: phonology, morphology, syntax, sound changes.
-/// User tabs between columns and navigates items with Up/Down.
+/// Tab moves between columns, Up/Down navigates, and Space toggles sound-change sets.
 pub struct ConfigComponent {
     phonology_options: Vec<String>,
     morphology_options: Vec<String>,
@@ -30,42 +44,70 @@ pub struct ConfigComponent {
     morph_list_state: ListState,
     syntax_list_state: ListState,
     sound_change_list_state: ListState,
+    sound_changes_on: BTreeSet<String>,
 }
 
-impl Default for ConfigComponent { fn default() -> Self { Self::new() } }
-
 impl ConfigComponent {
-    pub fn new() -> Self {
-        let phono_reg = archetypes::get_phonology_registry();
-        let morph_reg = archetypes::get_morphology_registry();
-        let syntax_reg = archetypes::get_syntax_registry();
-        let sc_reg = archetypes::get_sound_change_registry();
+    pub fn new(registries: &Registries) -> Self {
+        let mut phonology_options = vec![CUSTOM_PHONOLOGY.to_string()];
+        let mut built_in: Vec<String> = registries.phonologies.keys().cloned().collect();
+        built_in.sort();
+        phonology_options.extend(built_in);
 
-        let mut phono_options: Vec<String> = phono_reg.keys().cloned().collect(); phono_options.sort();
-        let mut morph_options: Vec<String> = morph_reg.keys().cloned().collect(); morph_options.sort();
-        let mut syntax_options: Vec<String> = syntax_reg.keys().cloned().collect(); syntax_options.sort();
-        let mut sc_options: Vec<String> = sc_reg.keys().cloned().collect(); sc_options.sort();
+        let mut morph_options: Vec<String> = registries.morphologies.keys().cloned().collect();
+        morph_options.sort();
+        let mut syntax_options: Vec<String> = registries.syntaxes.keys().cloned().collect();
+        syntax_options.sort();
+        let mut sc_options: Vec<String> = registries.sound_changes.keys().cloned().collect();
+        sc_options.sort();
 
-        let mut phono_state = ListState::default(); phono_state.select(Some(0));
-        let mut morph_state = ListState::default(); morph_state.select(Some(0));
-        let mut syntax_state = ListState::default(); syntax_state.select(Some(0));
-        let mut sc_state = ListState::default(); sc_state.select(Some(0));
+        let first = |len: usize| {
+            let mut state = ListState::default();
+            if len > 0 { state.select(Some(0)); }
+            state
+        };
+        let default_phono = phonology_options.iter().position(|p| p == "uralic_finnic").unwrap_or(0);
+        let default_morph = morph_options.iter().position(|p| p == "agglutinative").unwrap_or(0);
+        let default_syntax = syntax_options.iter().position(|p| p == "svo").unwrap_or(0);
+
+        let mut phono_state = first(phonology_options.len());
+        phono_state.select(Some(default_phono));
+        let mut morph_state = first(morph_options.len());
+        morph_state.select(Some(default_morph));
+        let mut syntax_state = first(syntax_options.len());
+        syntax_state.select(Some(default_syntax));
+        let sc_state = first(sc_options.len());
 
         Self {
-            phonology_options: phono_options, morphology_options: morph_options,
-            syntax_options, sound_change_options: sc_options, selected_field: 0,
-            phono_list_state: phono_state, morph_list_state: morph_state,
-            syntax_list_state: syntax_state, sound_change_list_state: sc_state,
+            phonology_options,
+            morphology_options: morph_options,
+            syntax_options,
+            sound_change_options: sc_options,
+            selected_field: 0,
+            phono_list_state: phono_state,
+            morph_list_state: morph_state,
+            syntax_list_state: syntax_state,
+            sound_change_list_state: sc_state,
+            sound_changes_on: BTreeSet::new(),
         }
     }
 
-    /// Return the currently selected configuration values.
-    pub fn get_selected_values(&self) -> (String, String, String, Vec<String>) {
-        let ph = self.phono_list_state.selected().and_then(|i| self.phonology_options.get(i)).cloned().unwrap_or_default();
-        let mo = self.morph_list_state.selected().and_then(|i| self.morphology_options.get(i)).cloned().unwrap_or_default();
-        let sy = self.syntax_list_state.selected().and_then(|i| self.syntax_options.get(i)).cloned().unwrap_or_default();
-        let sc = self.sound_change_list_state.selected().and_then(|i| self.sound_change_options.get(i)).cloned().into_iter().collect();
-        (ph, mo, sy, sc)
+    /// The current selection across all four panels.
+    pub fn selection(&self) -> Selection {
+        let pick = |state: &ListState, options: &[String]| {
+            state.selected().and_then(|i| options.get(i)).cloned().unwrap_or_default()
+        };
+        Selection {
+            phonology: pick(&self.phono_list_state, &self.phonology_options),
+            morphology: pick(&self.morph_list_state, &self.morphology_options),
+            syntax: pick(&self.syntax_list_state, &self.syntax_options),
+            sound_changes: self.sound_changes_on.iter().cloned().collect(),
+        }
+    }
+
+    /// Select the designer's phonology in the phonology panel.
+    pub fn select_custom(&mut self) {
+        self.phono_list_state.select(Some(0));
     }
 
     /// Move the selection cursor within the active field's list.
@@ -84,14 +126,25 @@ impl ConfigComponent {
         };
         state.select(Some(i));
     }
+
+    /// Toggle the sound-change set under the cursor on or off.
+    fn toggle_sound_change(&mut self) {
+        if let Some(key) = self.sound_change_list_state.selected().and_then(|i| self.sound_change_options.get(i)) {
+            if !self.sound_changes_on.remove(key) {
+                self.sound_changes_on.insert(key.clone());
+            }
+        }
+    }
 }
 
 impl Component for ConfigComponent {
     fn handle_event(&mut self, key_code: KeyCode) -> bool {
         match key_code {
             KeyCode::Tab => { self.selected_field = (self.selected_field + 1) % 4; }
+            KeyCode::BackTab => { self.selected_field = (self.selected_field + 3) % 4; }
             KeyCode::Up => { self.move_selection(false); }
             KeyCode::Down => { self.move_selection(true); }
+            KeyCode::Char(' ') if self.selected_field == 3 => { self.toggle_sound_change(); }
             _ => return false,
         }
         true
@@ -104,7 +157,10 @@ impl Component for ConfigComponent {
         self.render_list(f, chunks[0], "Phonology", &self.phonology_options, &self.phono_list_state, self.selected_field == 0);
         self.render_list(f, chunks[1], "Morphology", &self.morphology_options, &self.morph_list_state, self.selected_field == 1);
         self.render_list(f, chunks[2], "Syntax", &self.syntax_options, &self.syntax_list_state, self.selected_field == 2);
-        self.render_list(f, chunks[3], "Sound Changes", &self.sound_change_options, &self.sound_change_list_state, self.selected_field == 3);
+        let sc_labels: Vec<String> = self.sound_change_options.iter()
+            .map(|k| format!("[{}] {}", if self.sound_changes_on.contains(k) { "x" } else { " " }, k))
+            .collect();
+        self.render_list(f, chunks[3], "Sound Changes (Space)", &sc_labels, &self.sound_change_list_state, self.selected_field == 3);
     }
 }
 
@@ -127,12 +183,28 @@ impl ConfigComponent {
 
 // ── Help Overlay ────────────────────────────────────────────────────────
 
+pub const HELP_TEXT: &str = "\
+Configure
+  Tab / Shift-Tab   switch panel
+  Up / Down         move in panel
+  Space             toggle sound-change set
+Actions
+  Enter             generate lexicon
+  l                 browse lexicon (Up/Down, PgUp/PgDn, Esc closes)
+  s                 save lexicon to esoterica_out/
+  p                 phonology designer (Tab switches tabs, y confirms)
+General
+  h                 toggle this help
+  q / Ctrl-C        quit";
+
 pub struct HelpComponent;
-impl Component for HelpComponent {
-    fn handle_event(&mut self, _key_code: KeyCode) -> bool { false }
-    fn render(&self, f: &mut Frame, area: ratatui::layout::Rect) {
-        let text = "Controls:\nTab: Switch Fields\nUp/Down: Navigate\nEnter: Generate\ns: Save Lexicon\nh: Toggle Help\nq: Quit";
+
+impl HelpComponent {
+    pub fn render(&self, f: &mut Frame, area: ratatui::layout::Rect) {
         f.render_widget(Clear, area);
-        f.render_widget(Paragraph::new(text).block(Block::default().title("Help").borders(Borders::ALL)), area);
+        f.render_widget(
+            Paragraph::new(HELP_TEXT).block(Block::default().title("Help").borders(Borders::ALL)),
+            area,
+        );
     }
 }

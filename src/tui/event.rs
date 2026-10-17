@@ -1,23 +1,28 @@
-//! Crossterm event polling loop. Wraps raw terminal events into a TuiEvent enum
-//! so the application layer doesn't depend directly on crossterm's event model.
+//! Terminal event polling. Wraps crossterm events into a TuiEvent enum so the
+//! application layer does not depend on crossterm's event model directly.
 
-use crossterm::event::{self, Event, KeyEvent, MouseEvent};
+use crossterm::event::{self, Event, KeyEvent, KeyEventKind};
 use std::time::Duration;
 
-pub enum TuiEvent { Key(KeyEvent), Mouse(MouseEvent) }
+pub enum TuiEvent {
+    /// A key press (key releases and repeats are ignored).
+    Key(KeyEvent),
+    /// The terminal was resized and should be redrawn.
+    Resize,
+}
 
-/// Event polling loop. Blocks until a key or mouse event arrives (100ms poll interval).
+/// Event polling loop. Blocks until a key press or resize arrives.
 pub struct EventHandler;
 
 impl EventHandler {
     pub fn new() -> Self { Self }
-    /// Block until a relevant terminal event arrives. Ignores resize events.
+
     pub fn next(&self) -> std::io::Result<TuiEvent> {
         loop {
             if event::poll(Duration::from_millis(100))? {
                 match event::read()? {
-                    Event::Key(key) => return Ok(TuiEvent::Key(key)),
-                    Event::Mouse(mouse) => return Ok(TuiEvent::Mouse(mouse)),
+                    Event::Key(key) if key.kind == KeyEventKind::Press => return Ok(TuiEvent::Key(key)),
+                    Event::Resize(_, _) => return Ok(TuiEvent::Resize),
                     _ => continue,
                 }
             }

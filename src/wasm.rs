@@ -2,16 +2,15 @@
 //! Compile with: wasm-pack build --features wasm
 
 use wasm_bindgen::prelude::*;
-use crate::archetypes::{Phonology, Morphology, MorphRule, Syntax, SoundChange};
+use crate::archetypes::{Phonology, Morphology, MorphRule, Syntax};
 use crate::phonology::PhonologyEngine;
-use crate::morphology::MorphologyEngine;
 use crate::sound_change::SoundChangeEngine;
 use crate::syntax::SyntaxEngine;
 use crate::lexicon::LexiconGenerator;
 use crate::semantic_drift::{SemanticDriftEngine, DriftConfig};
 use crate::orthography::{OrthographyEngine, ScriptType, GlyphStyle};
 use crate::lexicon_structs::Lexicon;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 
 #[wasm_bindgen(start)]
 pub fn init_panic_hook() {
@@ -57,7 +56,7 @@ pub fn generate_lexicon(config_json: &str) -> Result<String, JsValue> {
         vowel_harmony: Option<bool>,
         morph_rules: Vec<MorphRule>,
         noun_classes: Option<Vec<String>>,
-        sound_changes: Vec<SoundChange>,
+        sound_changes: Vec<String>,
         size: usize,
         syllables_per_word: usize,
     }
@@ -73,7 +72,7 @@ pub fn generate_lexicon(config_json: &str) -> Result<String, JsValue> {
     };
     let morph = Morphology { rules: config.morph_rules, noun_classes: config.noun_classes };
 
-    let mut gen = LexiconGenerator::new(phono, morph, config.sound_changes)
+    let mut gen = LexiconGenerator::new(phono, morph, &config.sound_changes)
         .with_syllables(config.syllables_per_word);
     let lexicon = gen.generate_core_lexicon(config.size);
 
@@ -129,9 +128,37 @@ pub fn generate_orthography(vowels_json: &str, consonants_json: &str, script_typ
 pub fn generate_sentence(words_json: &str, word_order: &str, cases_json: &str) -> Result<String, JsValue> {
     let words: Vec<String> = serde_json::from_str(words_json).map_err(|e| JsValue::from_str(&e.to_string()))?;
     let cases: Vec<String> = serde_json::from_str(cases_json).map_err(|e| JsValue::from_str(&e.to_string()))?;
-    let syntax = Syntax { word_order: word_order.to_string(), cases: Some(cases) };
+    let syntax = Syntax { word_order: word_order.to_string(), cases: Some(cases), alignment: None, adpositions: None };
     let engine = SyntaxEngine::new(syntax);
     Ok(engine.generate_sentence(&words))
+}
+
+// ── Catalogue Generation ───────────────────────────────────────────────
+
+/// Generate a lexicon and example sentence from built-in catalogue keys, using the
+/// same validated pipeline as the CLI. `sound_changes_json` is a JSON array of set
+/// names, e.g. `["lenition"]`. Returns JSON with `lexicon` and `example_sentence`.
+#[wasm_bindgen]
+pub fn generate_from_catalogue(
+    phonology: &str,
+    morphology: &str,
+    syntax: &str,
+    sound_changes_json: &str,
+    size: usize,
+    syllables: usize,
+) -> Result<String, JsValue> {
+    let sound_changes: Vec<String> = serde_json::from_str(sound_changes_json).map_err(|e| JsValue::from_str(&e.to_string()))?;
+    let mut spec = crate::pipeline::Registries::builtin()
+        .spec(phonology, morphology, syntax, &sound_changes)
+        .map_err(|e| JsValue::from_str(&e))?;
+    spec.lexicon_size = size;
+    spec.syllables = syllables;
+    let generated = spec.generate().map_err(|e| JsValue::from_str(&e))?;
+    let result = serde_json::json!({
+        "lexicon": generated.lexicon,
+        "example_sentence": generated.example_sentence,
+    });
+    Ok(result.to_string())
 }
 
 // ── Sound Changes ──────────────────────────────────────────────────────
@@ -187,4 +214,19 @@ pub fn get_sound_change_presets() -> Result<String, JsValue> {
 pub fn get_syntax_presets() -> Result<String, JsValue> {
     let registry = crate::archetypes::get_syntax_registry();
     serde_json::to_string(&registry).map_err(|e| JsValue::from_str(&e.to_string()))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// The success path never constructs a JsValue, so it runs on the host.
+    #[test]
+    fn generate_from_catalogue_returns_lexicon_and_sentence() {
+        let out = generate_from_catalogue("uralic_finnic", "agglutinative", "sov", "[\"lenition\"]", 8, 2)
+            .expect("generation should succeed");
+        let v: serde_json::Value = serde_json::from_str(&out).unwrap();
+        assert!(v["lexicon"].is_object());
+        assert!(v["example_sentence"].as_str().unwrap().ends_with('.'));
+    }
 }

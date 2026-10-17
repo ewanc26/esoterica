@@ -605,3 +605,111 @@ vowels = ["a", "e", "i", "o", "u"]
 consonants = ["p", "b", "t", "d", "k", "g", "f", "v", "s", "z", "sh", "zh", "ts", "ch", "dj", "h", "m", "n", "l", "r", "j"]
 syllable_structure = "CV(C)"
 vowel_harmony = false
+
+# ── Fifth batch: gaps found against Glottolog's family and isolate list ──
+
+[africa_khoisan_hadza]
+# Hadza (isolate) — click consonants, CV(C)
+vowels = ["a", "e", "i", "o", "u"]
+consonants = ["ǃ", "ǀ", "ǁ", "k", "kʼ", "t", "tʼ", "p", "b", "d", "g", "s", "h", "m", "n", "l", "r", "w", "j", "ts", "q", "x"]
+syllable_structure = "CV(C)"
+vowel_harmony = false
+
+[africa_khoisan_sandawe]
+# Sandawe (isolate) — click consonants with aspiration, CV
+vowels = ["a", "e", "i", "o", "u"]
+consonants = ["ǃ", "ǃʰ", "ǀ", "ǁ", "k", "t", "p", "b", "d", "g", "s", "z", "h", "m", "n", "r", "l", "w", "j", "ts"]
+syllable_structure = "CV"
+vowel_harmony = false
+
+[asia_isolate_kusunda]
+# Kusunda (isolate, Nepal) — aspirates and palatal affricates, CV(C), two tones
+vowels = ["a", "e", "i", "o", "u"]
+consonants = ["p", "pʰ", "b", "t", "tʰ", "d", "k", "kʰ", "g", "c", "ch", "s", "h", "m", "n", "ny", "ng", "r", "l", "w", "j"]
+syllable_structure = "CV(C)"
+tones = 2
+vowel_harmony = false
+
+[americas_wakashan]
+# Wakashan (Kwakwaka'wakw-type) — very large consonant inventory, uvulars, schwa, CCVC
+vowels = ["ə", "a", "i", "o", "u"]
+consonants = ["p", "t", "k", "kʷ", "q", "qʷ", "ʔ", "p'", "t'", "k'", "q'", "ts", "tɬ", "tʃ", "x", "xʷ", "χ", "h", "m", "n", "l", "w", "j", "s", "ɬ"]
+syllable_structure = "CCVC"
+vowel_harmony = false
+
+[americas_muskogean]
+# Muskogean (Creek-type) — four stops series, CVC
+vowels = ["a", "e", "i", "o"]
+consonants = ["p", "t", "k", "kw", "c", "f", "s", "h", "l", "m", "n", "w", "j", "hl"]
+syllable_structure = "CVC"
+vowel_harmony = false
+
+[americas_caddoan]
+# Caddoan (Pawnee-type) — glottal stop, flapped r, CV(C)
+vowels = ["a", "e", "i", "o", "u"]
+consonants = ["p", "t", "k", "ʔ", "c", "r", "s", "h", "w", "j", "m", "n"]
+syllable_structure = "CV(C)"
+vowel_harmony = false
+
+[americas_yuman]
+# Yuman (Mojave-type) — uvular and labialised velars, CV(C)
+vowels = ["a", "e", "i", "o", "u"]
+consonants = ["p", "t", "k", "kʷ", "q", "m", "n", "ny", "ng", "s", "h", "x", "ʔ", "l", "r", "w", "j", "tʃ"]
+syllable_structure = "CV(C)"
+vowel_harmony = false
+
+[americas_mixezoque]
+# Mixe-Zoque (Mixe-type) — labialised velars and sibilants, CV(C)
+vowels = ["a", "e", "i", "o", "u", "ə"]
+consonants = ["p", "t", "k", "kʷ", "ʔ", "b", "d", "g", "m", "n", "ny", "ng", "s", "sh", "x", "h", "ts", "tʃ", "l", "r", "w", "j"]
+syllable_structure = "CV(C)"
+vowel_harmony = false
+
+[americas_totonacan]
+# Totonacan (Totonac-type) — lateral affricates, small vowel set, CVC
+vowels = ["a", "i", "u"]
+consonants = ["p", "t", "k", "q", "ts", "tɬ", "ɬ", "s", "x", "h", "m", "n", "l", "w", "j", "ʔ"]
+syllable_structure = "CVC"
+vowel_harmony = false
+
+[americas_mura]
+# Mura (Pirahã-type) — very small inventory, open syllables
+vowels = ["a", "e", "i", "o", "u"]
+consonants = ["p", "t", "k", "b", "g", "s", "h", "m", "n", "j", "w", "ʔ"]
+syllable_structure = "CV"
+vowel_harmony = false
+
+[americas_mapuche]
+# Mapuche (Mapudungun isolate) — retroflex-like laterals and palatal nasals, CV(C)
+vowels = ["a", "e", "i", "o", "u"]
+consonants = ["p", "t", "k", "tr", "ch", "ll", "ñ", "ng", "m", "n", "l", "r", "w", "j", "f", "s", "ʔ", "h"]
+syllable_structure = "CV(C)"
+vowel_harmony = false
+
+[oceania_papuan_angan]
+# Papuan, Angan family (Ankave-type) — prenasalised stops, CV(C)
+vowels = ["a", "e", "i", "o", "u"]
+consonants = ["p", "b", "t", "d", "k", "g", "m", "n", "ng", "s", "h", "l", "r", "w", "j", "f", "v"]
+syllable_structure = "CV(C)"
+vowel_harmony = false
+
+[oceania_australian_nyulnyulan]
+# Australian, Nyulnyulan (Nyulnyul-type) — laminals and retroflex series, CVC
+vowels = ["a", "i", "u"]
+consonants = ["p", "b", "t", "d", "k", "g", "c", "dʒ", "m", "n", "ny", "ng", "l", "rr", "r", "w", "j"]
+syllable_structure = "CVC"
+vowel_harmony = false
+
+[asia_austroasiatic_munda]
+# Austroasiatic, Munda branch (Santali-type) — retroflex stops and vowel contrasts, CV(C)
+vowels = ["a", "e", "i", "o", "u", "ɔ", "ɛ"]
+consonants = ["p", "b", "t", "d", "ʈ", "ɖ", "c", "j", "k", "g", "m", "n", "ɲ", "ŋ", "s", "h", "r", "l", "w", "j"]
+syllable_structure = "CV(C)"
+vowel_harmony = false
+
+[eurasia_ie_italic]
+# Indo-European, Italic branch (Latin-type) — labialised velars, CVC
+vowels = ["a", "e", "i", "o", "u"]
+consonants = ["p", "b", "t", "d", "k", "g", "kw", "gw", "f", "s", "m", "n", "l", "r", "w", "j", "h"]
+syllable_structure = "CVC"
+vowel_harmony = false

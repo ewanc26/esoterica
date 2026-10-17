@@ -105,31 +105,52 @@ they are named after.
 
 ### Coverage
 
-"Most families" is defined concretely: `major_families_are_represented` in
-`src/archetypes.rs` requires at least one inventory for each of 39 major families, isolates
-and creoles. `coverage_checklist_is_present` names the wider set of 82 inventories. Those inventories cover major and well-documented families and branches:
-Germanic, Romance, Slavic, Indo-Aryan, Celtic, Iranian, Hellenic, Baltic, Armenian and
-Albanian (Indo-European); Finnic, Ugric and Samoyedic (Uralic); Turkic; Mongolic; Tungusic;
-Chukotko-Kamchatkan; Basque, Ainu, Yeniseian, Nivkh and Burushaski (isolates); Kartvelian;
-Northwest Caucasian and Nakh-Dagestanian; Semitic, Berber, Cushitic, Chadic and Omotic
-(Afro-Asiatic); Bantu, Yoruboid, Mande, Atlantic, Gur, Kwa and Ubangian (Niger-Congo);
-Nilotic, Saharan and Songhay (Nilo-Saharan); Khoe and Tuu (Khoisan); Sinitic, Burmese and
-Tibetic (Sino-Tibetan); Hmong-Mien; Viet-Muong; Tai (Tai-Kadai); Mon-Khmer (Austroasiatic);
-Japonic; Koreanic; Dravidian; Austronesian (Polynesian, Malayo-Polynesian, Philippine,
-Malagasy); Trans-New Guinea and Sepik (Papuan); Pama-Nyungan and Gunwinyguan (Australian);
-Uto-Aztecan, Quechuan, Algic, Salishan, Eskaleut, Mayan, Arawakan, Athabaskan,
-Oto-Manguean, Tupian, Siouan, Iroquoian, Chibchan, Pano-Tacanan, Jê, Aymaran and
-Tucanoan (Americas); Creole: Tok Pisin and Haitian; Constructed: Toki Pona and Esperanto.
+Reference counts, from Glottolog (as of March 2026): 246 genealogical families and 183
+isolates ([Glottolog: About Languoids](https://glottolog.org/glottolog/glottologinformation)).
+Glottolog also lists a few hundred languages in each of its largest families, such as
+Atlantic–Congo (about 1,410 languages) and Austronesian (about 1,274)
+([Brilliant Maps, Glottolog 5.0 table](https://brilliantmaps.com/human-language-families/)).
 
-**Not covered:** sign languages (the model generates spoken segments only); most Papuan
-families beyond Trans-New Guinea and Sepik; most Australian families beyond Pama-Nyungan
-and Gunwinyguan; most small Americas and Caucasus families; other Hmong-Mien and Chadic
-branches; and most other creoles. Word orders cover all six, with ergative and split-ergative
-variants. Morphology covers agreement and classifier profiles as well as concatenative,
-root-and-pattern and reduplicative ones.
+This registry has 97 stylised inventories. Each covers one family, branch or isolate, so
+the largest families by language count each have at least one entry: Atlantic–Congo
+(Bantu, Yoruboid, Mande, Atlantic, Gur, Kwa, Ubangian), Austronesian (Polynesian,
+Malayo-Polynesian, Philippine, Malagasy), Indo-European, Sino-Tibetan, Afro-Asiatic and
+Pama–Nyungan. An inventory represents a family's typical segments, not its internal
+variety.
+
+Groups covered include Indo-European (Germanic, Romance, Slavic, Indo-Aryan, Celtic,
+Iranian, Hellenic, Baltic, Armenian, Albanian, Italic); Uralic (Finnic, Ugric, Samoyedic);
+Turkic; Mongolic; Tungusic; Chukotko-Kamchatkan; Kartvelian; Northwest and Nakh-Dagestanian
+Caucasian; Semitic, Berber, Cushitic, Chadic and Omotic (Afro-Asiatic); Bantu, Yoruboid,
+Mande, Atlantic, Gur, Kwa and Ubangian (Niger-Congo); Nilotic, Saharan and Songhay
+(Nilo-Saharan); Khoe, Tuu, Hadza and Sandawe (Khoisan); Sinitic, Burmese and Tibetic
+(Sino-Tibetan); Hmong-Mien; Viet-Muong; Tai (Tai-Kadai); Mon-Khmer and Munda (Austroasiatic);
+Japonic; Koreanic; Dravidian; Austronesian (Polynesian, Malayo-Polynesian, Philippine,
+Malagasy); Trans-New Guinea, Sepik and Angan (Papuan); Pama–Nyungan, Gunwinyguan and
+Nyulnyulan (Australian); Uto-Aztecan, Quechuan, Algic, Salishan, Eskaleut, Mayan, Arawakan,
+Athabaskan, Oto-Manguean, Tupian, Siouan, Iroquoian, Chibchan, Pano-Tacanan, Jê, Aymaran,
+Tucanoan, Wakashan, Muskogean, Caddoan, Yuman, Mixe-Zoque, Totonacan and Mura (Americas);
+the isolates Basque, Ainu, Yeniseian, Nivkh, Burushaski, Kusunda and Mapuche; plus two
+creoles (Tok Pisin, Haitian) and two constructed languages (Toki Pona, Esperanto).
+
+**Not covered:**
+- **Sign languages.** The model generates spoken segments only.
+- **Most of the remaining families.** Of Glottolog's 246 families, most are small, and many
+  are in Papua, Australia and the Americas. Only one or two groups are represented in
+  each of those regions.
+- **Papuan.** Only Trans-New Guinea, Sepik and Angan. Papuan spans many small families
+  ([Wikipedia: Papuan languages](https://en.wikipedia.org/wiki/Papuan_languages)).
+- **Australian.** Only Pama–Nyungan, Gunwinyguan and Nyulnyulan.
+- **Caucasian and Americas.** Many branches have no inventory.
+- **Other creoles and constructed languages.**
+
+Word orders cover all six, with ergative and split-ergative variants. Morphology covers
+agreement and classifier profiles as well as concatenative, root-and-pattern and
+reduplicative ones. The `coverage_checklist_is_present` test names every inventory above,
+so removing one fails the build.
 
 The WASM bindings expose `generate_from_catalogue`, which resolves catalogue keys through
-the same pipeline as the CLI. Its browser-side behaviour has not been run in a browser.
+the same pipeline as the CLI. Its browser-side behaviour has been checked with a single call.
 
 To use your own catalogues without rebuilding, put any of `phonologies.toml`,
 `morphologies.toml`, `syntaxes.toml` or `sound_changes.toml` in a directory and pass

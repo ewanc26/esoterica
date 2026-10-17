@@ -303,6 +303,12 @@ mod tests {
             "oceania_austronesian_malagasy", "oceania_papuan_sepik", "africa_khoisan_tuu",
             "africa_nigercongo_ubangian", "creole_tok_pisin", "creole_haitian",
             "constructed_toki_pona", "constructed_esperanto",
+            // Fifth batch: gaps found against Glottolog's family and isolate list
+            "africa_khoisan_hadza", "africa_khoisan_sandawe", "asia_isolate_kusunda",
+            "americas_wakashan", "americas_muskogean", "americas_caddoan", "americas_yuman",
+            "americas_mixezoque", "americas_totonacan", "americas_mura", "americas_mapuche",
+            "oceania_papuan_angan", "oceania_australian_nyulnyulan", "asia_austroasiatic_munda",
+            "eurasia_ie_italic",
         ];
         let missing: Vec<&str> = required_phonology.iter().copied().filter(|k| !phono.contains_key(*k)).collect();
         assert!(missing.is_empty(), "missing phonology families: {:?}", missing);

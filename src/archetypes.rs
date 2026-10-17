@@ -134,9 +134,20 @@ impl Syntax {
 
 // ── TOML Registry Loaders ────────────────────────────────────────────────
 
-/// Load the phonology catalogue from data/phonologies.toml at compile time.
+/// Load the phonology catalogue at compile time: the curated inventories in
+/// data/phonologies.toml, plus the generated Glottolog representatives in
+/// data/phonologies_glottolog.toml. Generated keys end in a Glottolog code, so the
+/// two sets never collide.
 pub fn get_phonology_registry() -> HashMap<String, Phonology> {
-    toml::from_str(include_str!("../data/phonologies.toml")).expect("Failed to parse phonologies.toml")
+    let mut map: HashMap<String, Phonology> = toml::from_str(include_str!("../data/phonologies.toml"))
+        .expect("Failed to parse phonologies.toml");
+    let generated: HashMap<String, Phonology> = toml::from_str(include_str!("../data/phonologies_glottolog.toml"))
+        .expect("Failed to parse phonologies_glottolog.toml");
+    for (key, value) in generated {
+        let previous = map.insert(key.clone(), value);
+        assert!(previous.is_none(), "duplicate phonology key '{}'", key);
+    }
+    map
 }
 
 /// Load the sound change catalogue from data/sound_changes.toml.
@@ -258,6 +269,19 @@ mod tests {
             .filter(|(_, keys)| !keys.iter().any(|k| phono.contains_key(*k)))
             .map(|(family, _)| *family).collect();
         assert!(missing.is_empty(), "major families without an inventory: {:?}", missing);
+    }
+
+    /// The generated Glottolog set: sign languages are excluded by design, and known
+    /// families are present by their Glottolog code.
+    #[test]
+    fn generated_catalogue_excludes_sign_languages_and_keeps_known_families() {
+        let phono = get_phonology_registry();
+        assert!(!phono.keys().any(|k| k.ends_with("_sign1238")), "sign languages must not be generated");
+        let generated: Vec<&String> = phono.keys().filter(|k| k.len() > 9 && k.chars().rev().take(4).all(|c| c.is_ascii_digit())).collect();
+        assert!(generated.len() >= 240, "expected at least 240 generated inventories, got {}", generated.len());
+        for code in ["indo1319", "afro1255", "atla1278", "aust1307", "sino1245", "pama1250"] {
+            assert!(phono.keys().any(|k| k.ends_with(&format!("_{}", code))), "missing family {}", code);
+        }
     }
 
     /// Named coverage checklist for what the framework ships. Each family and

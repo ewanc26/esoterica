@@ -105,49 +105,48 @@ they are named after.
 
 ### Coverage
 
-Reference counts, from Glottolog (as of March 2026): 246 genealogical families and 183
-isolates ([Glottolog: About Languoids](https://glottolog.org/glottolog/glottologinformation)).
-Glottolog also lists a few hundred languages in each of its largest families, such as
-Atlantic–Congo (about 1,410 languages) and Austronesian (about 1,274)
-([Brilliant Maps, Glottolog 5.0 table](https://brilliantmaps.com/human-language-families/)).
+Reference: Glottolog (as of March 2026) lists 246 genealogical families and 183 isolates
+([Glottolog: About Languoids](https://glottolog.org/glottolog/glottologinformation)).
+Sign languages are excluded from this project, because the model generates spoken
+segments only.
 
-This registry has 97 stylised inventories. Each covers one family, branch or isolate, so
-the largest families by language count each have at least one entry: Atlantic–Congo
-(Bantu, Yoruboid, Mande, Atlantic, Gur, Kwa, Ubangian), Austronesian (Polynesian,
-Malayo-Polynesian, Philippine, Malagasy), Indo-European, Sino-Tibetan, Afro-Asiatic and
-Pama–Nyungan. An inventory represents a family's typical segments, not its internal
-variety.
+The catalogue has two parts:
 
-Groups covered include Indo-European (Germanic, Romance, Slavic, Indo-Aryan, Celtic,
-Iranian, Hellenic, Baltic, Armenian, Albanian, Italic); Uralic (Finnic, Ugric, Samoyedic);
-Turkic; Mongolic; Tungusic; Chukotko-Kamchatkan; Kartvelian; Northwest and Nakh-Dagestanian
-Caucasian; Semitic, Berber, Cushitic, Chadic and Omotic (Afro-Asiatic); Bantu, Yoruboid,
-Mande, Atlantic, Gur, Kwa and Ubangian (Niger-Congo); Nilotic, Saharan and Songhay
-(Nilo-Saharan); Khoe, Tuu, Hadza and Sandawe (Khoisan); Sinitic, Burmese and Tibetic
-(Sino-Tibetan); Hmong-Mien; Viet-Muong; Tai (Tai-Kadai); Mon-Khmer and Munda (Austroasiatic);
-Japonic; Koreanic; Dravidian; Austronesian (Polynesian, Malayo-Polynesian, Philippine,
-Malagasy); Trans-New Guinea, Sepik and Angan (Papuan); Pama–Nyungan, Gunwinyguan and
-Nyulnyulan (Australian); Uto-Aztecan, Quechuan, Algic, Salishan, Eskaleut, Mayan, Arawakan,
-Athabaskan, Oto-Manguean, Tupian, Siouan, Iroquoian, Chibchan, Pano-Tacanan, Jê, Aymaran,
-Tucanoan, Wakashan, Muskogean, Caddoan, Yuman, Mixe-Zoque, Totonacan and Mura (Americas);
-the isolates Basque, Ainu, Yeniseian, Nivkh, Burushaski, Kusunda and Mapuche; plus two
-creoles (Tok Pisin, Haitian) and two constructed languages (Toki Pona, Esperanto).
+- **Curated inventories** (`data/phonologies.toml`, 97 entries). Hand-written, stylised
+  inventories for families and branches, including the largest by language count:
+  Atlantic–Congo, Austronesian, Indo-European, Sino-Tibetan and Afro-Asiatic.
+- **Generated Glottolog representatives** (`data/phonologies_glottolog.toml`, 248 entries).
+  One inventory per Glottolog top-level family or isolate that has at least one language in
+  [PHOIBLE](https://phoible.org) (3,020 inventories, CC BY-SA 3.0). The script
+  `scripts/build_glottolog_phonologies.py` builds them from PHOIBLE and the Glottolog
+  repository. Each family uses the member language whose consonant count is the median of
+  the family. Syllable templates are a generic default (`CV(C)`), because PHOIBLE does not
+  record phonotactics.
 
 **Not covered:**
-- **Sign languages.** The model generates spoken segments only.
-- **Most of the remaining families.** Of Glottolog's 246 families, most are small, and many
-  are in Papua, Australia and the Americas. Only one or two groups are represented in
-  each of those regions.
-- **Papuan.** Only Trans-New Guinea, Sepik and Angan. Papuan spans many small families
-  ([Wikipedia: Papuan languages](https://en.wikipedia.org/wiki/Papuan_languages)).
-- **Australian.** Only Pama–Nyungan, Gunwinyguan and Nyulnyulan.
-- **Caucasian and Americas.** Many branches have no inventory.
-- **Other creoles and constructed languages.**
+- **Sign languages**, by design.
+- **178 families and isolates** have no PHOIBLE inventory in their subtree, so no inventory
+  is generated for them. They are listed by Glottolog code in the header of
+  `data/phonologies_glottolog.toml`. Covering them would need other sources, such as
+  grammars, which this build doesn't use.
+- **Within-family variety.** One inventory represents each family, not its dialects or
+  sub-branches.
 
 Word orders cover all six, with ergative and split-ergative variants. Morphology covers
 agreement and classifier profiles as well as concatenative, root-and-pattern and
-reduplicative ones. The `coverage_checklist_is_present` test names every inventory above,
-so removing one fails the build.
+reduplicative ones. Tests check that every curated entry is valid, that every generated
+entry is valid, and that sign languages are absent. `coverage_checklist_is_present` names
+the curated inventories, so removing one fails the build.
+
+#### Regenerating the generated catalogue
+
+```bash
+curl -L -o phoible.csv https://raw.githubusercontent.com/phoible/dev/master/data/phoible.csv
+curl -L -o glottolog.zip https://github.com/glottolog/glottolog/archive/refs/heads/master.zip
+unzip glottolog.zip
+python3 scripts/build_glottolog_phonologies.py --phoible phoible.csv \
+  --glottolog glottolog-master --out data/phonologies_glottolog.toml
+```
 
 The WASM bindings expose `generate_from_catalogue`, which resolves catalogue keys through
 the same pipeline as the CLI. Its browser-side behaviour has been checked with a single call.

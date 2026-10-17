@@ -1,17 +1,60 @@
 # Word order and case system configurations.
 # Each entry specifies one of the six major word orders and its associated case system.
+# `cases` lists [subject/agent case, object/patient case].
+# `alignment` and `adpositions` are descriptive metadata for the design.
 
 [svo]
 # Subject-Verb-Object (English, Chinese, Romance)
 word_order = "SVO"
 cases = ["nominative", "accusative"]
-
-[vso]
-# Verb-Subject-Object (Irish, Welsh, Maori)
-word_order = "VSO"
-cases = ["nominative", "ergative"]
+alignment = "nominative-accusative"
+adpositions = "prepositional"
 
 [sov]
 # Subject-Object-Verb (Japanese, Turkish, Korean)
 word_order = "SOV"
-cases = ["nominative", "dative"]
+cases = ["nominative", "accusative"]
+alignment = "nominative-accusative"
+adpositions = "postpositional"
+
+[sov_ergative]
+# Subject-Object-Verb with ergative marking on the agent (Basque, Hindi-Urdu perfective)
+word_order = "SOV"
+cases = ["ergative", "absolutive"]
+alignment = "ergative-absolutive"
+adpositions = "postpositional"
+
+[vso]
+# Verb-Subject-Object (Irish, Welsh, Classical Arabic)
+word_order = "VSO"
+cases = ["nominative", "accusative"]
+alignment = "nominative-accusative"
+adpositions = "prepositional"
+
+[vos]
+# Verb-Object-Subject (Malagasy-type, with ergative-style agent marking)
+word_order = "VOS"
+cases = ["ergative", "absolutive"]
+alignment = "ergative-absolutive"
+adpositions = "prepositional"
+
+[ovs]
+# Object-Verb-Subject (Hixkaryana-type)
+word_order = "OVS"
+cases = ["ergative", "absolutive"]
+alignment = "ergative-absolutive"
+adpositions = "prepositional"
+
+[osv]
+# Object-Subject-Verb (rare; Xavante-type)
+word_order = "OSV"
+cases = ["nominative", "accusative"]
+alignment = "nominative-accusative"
+adpositions = "postpositional"
+
+[sov_split_ergative]
+# Subject-Object-Verb with split ergativity (Hindi-Urdu-type: ergative in perfective aspect)
+word_order = "SOV"
+cases = ["ergative", "absolutive"]
+alignment = "split-ergative"
+adpositions = "postpositional"

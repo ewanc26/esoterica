@@ -86,7 +86,7 @@ mod tests {
     use crate::archetypes::Syntax;
 
     fn make_syntax(order: &str) -> Syntax {
-        Syntax { word_order: order.to_string(), cases: Some(vec!["NOM".to_string(), "ACC".to_string()]) }
+        Syntax { word_order: order.to_string(), cases: Some(vec!["NOM".to_string(), "ACC".to_string()]), alignment: None, adpositions: None }
     }
 
     fn sample_words() -> Vec<String> {

@@ -30,3 +30,51 @@ rules = [
     { infix = "-ka-" }
 ]
 noun_classes = ["animate", "inanimate", "abstract"]
+
+[root_pattern]
+# Non-concatenative root-and-pattern morphology (e.g. Arabic, Hebrew): the root's
+# consonants are interleaved with a vocalic pattern
+rules = [
+    { template = "CaCaC" }
+]
+
+[reduplicative]
+# Full or partial reduplication for plurality, intensity or aspect (e.g. Malay, Tagalog)
+rules = [
+    "reduplication"
+]
+
+[infixing]
+# Infixation inside the root (e.g. Tagalog -um- and -in-)
+rules = [
+    { infix = "-um-" }
+]
+
+[circumfixal]
+# Circumfixal marking, a prefix and suffix on one stem (e.g. German past participle)
+rules = [
+    { prefix = "ge-" },
+    { suffix = "-t" }
+]
+
+[noun_class_bantu]
+# Prefix-based noun classes with concord (e.g. Swahili, Zulu)
+rules = [
+    { prefix = "mu-" },
+    { suffix = "-o" }
+]
+noun_classes = ["class1_person", "class3_plant", "class5_object", "class7_tool", "class9_animal"]
+
+[polypersonal_agreement]
+# Verbal person agreement on both ends of the verb (Basque-type), modelled as affixes
+rules = [
+    { prefix = "n-" },
+    { suffix = "-zu" }
+]
+
+[classifier]
+# Noun classifiers attached as a prefix to the noun (Tzeltal/Dyirbal-type)
+rules = [
+    { prefix = "cl-" }
+]
+noun_classes = ["animate", "round", "flat", "long"]

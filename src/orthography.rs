@@ -36,6 +36,33 @@ pub enum GlyphStyle {
     Ornate,
 }
 
+impl ScriptType {
+    /// Parse a script name as used on the command line, e.g. "abjad".
+    pub fn parse(name: &str) -> Result<Self, String> {
+        match name {
+            "alphabet" => Ok(Self::Alphabet),
+            "abjad" => Ok(Self::Abjad),
+            "abugida" => Ok(Self::Abugida),
+            "syllabary" => Ok(Self::Syllabary),
+            "logography" => Ok(Self::Logography),
+            other => Err(format!("unknown script type '{}' (alphabet, abjad, abugida, syllabary, logography)", other)),
+        }
+    }
+}
+
+impl GlyphStyle {
+    /// Parse a glyph style name as used on the command line, e.g. "curved".
+    pub fn parse(name: &str) -> Result<Self, String> {
+        match name {
+            "angular" => Ok(Self::Angular),
+            "curved" => Ok(Self::Curved),
+            "minimal" => Ok(Self::Minimal),
+            "ornate" => Ok(Self::Ornate),
+            other => Err(format!("unknown glyph style '{}' (angular, curved, minimal, ornate)", other)),
+        }
+    }
+}
+
 /// A single glyph description.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Glyph {

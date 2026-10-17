@@ -32,10 +32,16 @@ impl FormalRule {
     /// Parse a rule string into a FormalRule.
     /// Format: `from > to` or `from > to / left_right`
     pub fn parse(input: &str) -> Result<Self, String> {
-        parse_formal_rule(input).map(|(_, rule)| rule).map_err(|e| format!("Failed to parse rule '{}': {:?}", input, e))
+        match parse_formal_rule(input.trim()) {
+            Ok(("", rule)) => Ok(rule),
+            Ok((rest, _)) => Err(format!("Failed to parse rule '{}': unexpected trailing '{}'", input, rest)),
+            Err(e) => Err(format!("Failed to parse rule '{}': {:?}", input, e)),
+        }
     }
 
     /// Apply this rule to a word, returning the transformed string.
+    /// Tone superscripts are transparent: context checks skip them, so `_#` and
+    /// `V_V` see the segments around a tone mark rather than the mark itself.
     pub fn apply(&self, word: &str) -> String {
         match self {
             FormalRule::Unconditional { from, to } => {
@@ -45,34 +51,42 @@ impl FormalRule {
             FormalRule::Contextual { from, to, left_context, right_context } => {
                 let repl = if to == "\u{2205}" { "" } else { to.as_str() };
                 let chars: Vec<char> = word.chars().collect();
+                // Segment view with tone marks removed, plus each segment's raw index
+                let segments: Vec<char> = chars.iter().copied().filter(|c| !is_tone_mark(*c)).collect();
                 let from_chars: Vec<char> = from.chars().collect();
                 let from_len = from_chars.len();
-                if from_len == 0 || chars.len() < from_len { return word.to_string(); }
+                if from_len == 0 || segments.len() < from_len { return word.to_string(); }
+
                 let mut result = String::new();
-                let mut i = 0;
-                while i < chars.len() {
-                    if i + from_len <= chars.len() && chars[i..i + from_len] == from_chars[..] {
-                        let left_ok = match left_context {
-                            None => true,
-                            Some(ref ctx) => match ctx.as_str() {
-                                "#" => i == 0,
-                                "V" => i > 0 && is_vowel(chars[i - 1]),
-                                "C" => i > 0 && is_consonant(chars[i - 1]),
-                                _ => { let cl = ctx.chars().count(); i >= cl && chars[i - cl..i].iter().collect::<String>() == *ctx }
-                            }
-                        };
-                        let right_ok = match right_context {
-                            None => true,
-                            Some(ref ctx) => match ctx.as_str() {
-                                "#" => i + from_len == chars.len(),
-                                "V" => i + from_len < chars.len() && is_vowel(chars[i + from_len]),
-                                "C" => i + from_len < chars.len() && is_consonant(chars[i + from_len]),
-                                _ => { let cl = ctx.chars().count(); i + from_len + cl <= chars.len() && chars[i + from_len..i + from_len + cl].iter().collect::<String>() == *ctx }
-                            }
-                        };
-                        if left_ok && right_ok { result.push_str(repl); i += from_len; continue; }
+                let mut raw = 0; // index into chars
+                let mut seg = 0; // index into segments
+                while raw < chars.len() {
+                    if is_tone_mark(chars[raw]) {
+                        result.push(chars[raw]);
+                        raw += 1;
+                        continue;
                     }
-                    result.push(chars[i]); i += 1;
+                    if seg + from_len <= segments.len()
+                        && segments[seg..seg + from_len] == from_chars[..]
+                        && left_ok(&segments, seg, left_context.as_deref())
+                        && right_ok(&segments, seg + from_len, right_context.as_deref())
+                    {
+                        // Consume the matched span, keeping any tone marks that fall inside it
+                        let mut end = raw;
+                        let mut matched = 0;
+                        while matched < from_len {
+                            if !is_tone_mark(chars[end]) { matched += 1; }
+                            end += 1;
+                        }
+                        result.push_str(repl);
+                        result.extend(chars[raw..end].iter().filter(|c| is_tone_mark(**c)));
+                        raw = end;
+                        seg += from_len;
+                        continue;
+                    }
+                    result.push(chars[raw]);
+                    raw += 1;
+                    seg += 1;
                 }
                 result
             }
@@ -80,9 +94,49 @@ impl FormalRule {
     }
 }
 
+/// Check the left environment against the segment view, ending before index `at`.
+fn left_ok(segments: &[char], at: usize, ctx: Option<&str>) -> bool {
+    match ctx {
+        None => true,
+        Some("#") => at == 0,
+        Some("V") => at > 0 && is_vowel(segments[at - 1]),
+        Some("C") => at > 0 && is_consonant(segments[at - 1]),
+        Some(literal) => {
+            let lit: Vec<char> = literal.chars().collect();
+            at >= lit.len() && segments[at - lit.len()..at] == lit[..]
+        }
+    }
+}
+
+/// Check the right environment against the segment view, starting at index `at`.
+fn right_ok(segments: &[char], at: usize, ctx: Option<&str>) -> bool {
+    match ctx {
+        None => true,
+        Some("#") => at == segments.len(),
+        Some("V") => at < segments.len() && is_vowel(segments[at]),
+        Some("C") => at < segments.len() && is_consonant(segments[at]),
+        Some(literal) => {
+            let lit: Vec<char> = literal.chars().collect();
+            at + lit.len() <= segments.len() && segments[at..at + lit.len()] == lit[..]
+        }
+    }
+}
+
 // ── Helper Predicates ────────────────────────────────────────────────────
 
-fn is_vowel(c: char) -> bool { matches!(c, 'a' | 'e' | 'i' | 'o' | 'u' | '\u{00e4}' | '\u{00f6}' | 'y' | '\u{00e6}' | '\u{00f8}') }
+/// Superscript digits used for lexical tone marks (¹²³⁴⁵ and related).
+pub fn is_tone_mark(c: char) -> bool {
+    matches!(c, '\u{00b9}' | '\u{00b2}' | '\u{00b3}' | '\u{2070}'..='\u{209f}')
+}
+
+/// Vowel letters (romanised and IPA) recognised by context classes and morphology.
+pub fn is_vowel(c: char) -> bool {
+    matches!(c, 'a' | 'e' | 'i' | 'o' | 'u' | 'y'
+        | '\u{00e4}' | '\u{00f6}' | '\u{00fc}' | '\u{00e6}' | '\u{00f8}' // ä ö ü æ ø
+        | '\u{0259}' | '\u{025b}' | '\u{0254}' | '\u{026a}' | '\u{028a}' // ə ɛ ɔ ɪ ʊ
+        | '\u{0131}' | '\u{0268}' | '\u{026f}' | '\u{0251}'          // ı ɨ ɯ ɑ
+        | '\u{00eb}' | '\u{0264}' | '\u{0250}' | '\u{028c}')          // ë ɤ ɐ ʌ
+}
 fn is_consonant(c: char) -> bool { c.is_alphabetic() && !is_vowel(c) }
 
 // ── Nom Parsers ──────────────────────────────────────────────────────────
@@ -171,4 +225,26 @@ mod tests {
     #[test] fn test_final_devoicing() { let e = SoundChangeEngine::from_formal_rules(&["b > p / _#".to_string(), "d > t / _#".to_string(), "g > k / _#".to_string()]); assert_eq!(e.apply("tab"), "tap"); assert_eq!(e.apply("tod"), "tot"); assert_eq!(e.apply("tag"), "tak"); }
     #[test] fn test_nasal_assimilation() { let e = SoundChangeEngine::from_formal_rules(&["n > m / _p".to_string(), "n > ng / _k".to_string()]); assert_eq!(e.apply("tanpa"), "tampa"); assert_eq!(e.apply("tanka"), "tangka"); }
     #[test] fn test_compound_rules() { let e = SoundChangeEngine::from_formal_rules(&["p > f / _#".to_string(), "t > s / _#".to_string(), "a > e / _#".to_string()]); assert_eq!(e.apply("pata"), "pate"); assert_eq!(e.apply("tap"), "taf"); assert_eq!(e.apply("pat"), "pas"); }
+
+    #[test] fn test_tone_marks_are_transparent_to_word_final_context() {
+        // Regression: a tone superscript used to hide the word edge from "_#"
+        let e = SoundChangeEngine::from_formal_rules(&["k > g / _#".to_string()]);
+        assert_eq!(e.apply("tak\u{00b9}"), "tag\u{00b9}");
+    }
+
+    #[test] fn test_tone_marks_are_transparent_to_intervocalic_context() {
+        // Regression: a tone superscript used to block "V_V" across a syllable boundary
+        let e = SoundChangeEngine::from_formal_rules(&["p > b / V_V".to_string()]);
+        assert_eq!(e.apply("ka\u{00b9}pa\u{00b2}"), "ka\u{00b9}ba\u{00b2}");
+    }
+
+    #[test] fn test_tone_marks_survive_deletion_inside_a_match() {
+        let e = SoundChangeEngine::from_formal_rules(&["h > \u{2205} / _#".to_string()]);
+        assert_eq!(e.apply("ta\u{00b9}h\u{00b2}"), "ta\u{00b9}\u{00b2}");
+    }
+
+    #[test] fn test_literal_context_ignores_tone_marks() {
+        let e = SoundChangeEngine::from_formal_rules(&["k > g / n_".to_string()]);
+        assert_eq!(e.apply("n\u{00b9}k\u{00b2}"), "n\u{00b9}g\u{00b2}");
+    }
 }

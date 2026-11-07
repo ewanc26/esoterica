@@ -20,4 +20,4 @@ Esoterica is a modular, high-performance Rust framework for generating construct
 
 ## Recent history
 
-Sync AGENTS.md from zincfox; Sync AGENTS.md from zincfox; Sync CONTRIBUTING.md from zincfox; Sync CONTRIBUTING.md from zincfox; Update issue template
+Update issue template

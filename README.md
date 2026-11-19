@@ -51,7 +51,8 @@ esoterica/
 │   ├── wasm.rs             # WASM bindings
 │   ├── archetypes.rs       # Component types + registry
 │   ├── phonology.rs        # Syllable/word generation
-│   ├── morphology.rs       # Morphological transformations
+│   ├── 
+morphology.rs       # Morphological transformations
 │   ├── syntax.rs           # Word order (6 orders)
 │   ├── sound_change.rs     # Rule parser + legacy engine
 │   ├── lexicon.rs          # Dictionary generation
@@ -94,7 +95,8 @@ Selecting **(custom designer)** in the Phonology panel generates from the design
 ## Adding data
 
 Registries are compiled in with `include_str!`, so a change to `data/` needs a rebuild.
-`cargo test --lib` checks every entry: TOML parses, phoneme inventories are non-empty,
+`cargo test --lib` checks every entry: TOML parses, phoneme inventories are 
+non-empty,
 syllable templates use only `C`, `V` and optional `( )` groups, word orders are valid,
 and every sound-change rule parses. It also runs every phonology against every
 morphology and sound-change set, and checks that a named list of families and
@@ -129,7 +131,8 @@ The catalogue has two parts:
   is generated for them. They are listed by Glottolog code in the header of
   `data/phonologies_glottolog.toml`. Covering them would need other sources, such as
   grammars, which this build doesn't use.
-- **Within-family variety.** One inventory represents each family, not its dialects or
+- **Within-family variety.** One inventory represents each family, not its dialects 
+or
   sub-branches.
 
 Word orders cover all six, with ergative and split-ergative variants. Morphology covers
@@ -179,8 +182,11 @@ cargo run --release -- \
 If you find this project useful, consider supporting its development:
 
 [![Ko-fi](https://img.shields.io/badge/Ko--fi-F16061?style=for-the-badge&logo=ko-fi&logoColor=white)](https://ko-fi.com/ewancroft)
-[![GitHub Sponsors](https://img.shields.io/badge/GitHub%20Sponsors-30363D?style=for-the-badge&logo=github&logoColor=white)](https://github.com/sponsors/ewanc26)
-[![Liberapay](https://img.shields.io/badge/Liberapay-A60000?style=for-the-badge&logo=liberapay&logoColor=white)](https://liberapay.com/ewanc26/)
+[![GitHub 
+Sponsors](https://img.shields.io/badge/GitHub%20Sponsors-30363D?style=for-the-badge&logo=github&logoColor=white)](https://github.com/sponsors/ewanc26)
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the workflow and the checks required before opening a pull request.
 
 ## Licence
 

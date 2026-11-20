@@ -24,7 +24,7 @@ wasm = ["dep:wasm-bindgen", "dep:js-sys", "dep:console_error_panic_hook", "dep:g
 # ── Core (always available) ──────────────────────────────────────────────
 serde = { version = "1.0.201", features = ["derive"] }
 serde_json = "1.0.117"
-toml = "0.8"
+toml = "1.2"
 nom = "7.1"
 anyhow = "1.0.86"
 rand = "0.8.5"

@@ -10,7 +10,7 @@ cargo run --release -- --interactive   # TUI
 cargo test --lib                       # validates every data entry
 ```
 
-The web UI: `cd web && npm install && npm run dev`. The WASM core: `wasm-pack build --features wasm --no-default-tapes --no-default-features` (see the README for the exact flag set).
+The web UI: `cd web && npm install && npm run dev`. The WASM core: `wasm-pack build --features wasm --no-default-features`.
 
 ## Notes for this project
 
@@ -28,4 +28,4 @@ The web UI: `cd web && npm install && npm run dev`. The WASM core: `wasm-pack bu
 
 ## Licence
 
-AGPL-3.0 (see [LICENSE](LICENSE)). Contributions are accepted under the same terms. Contributions are accepted under the same terms.
+AGPL-3.0 (see [LICENSE](LICENSE)). Contributions are accepted under the same terms.

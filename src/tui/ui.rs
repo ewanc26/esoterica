@@ -12,18 +12,18 @@ use crate::tui::components::Component;
 /// Render a single frame.
 pub fn render(f: &mut Frame, app: &App) {
     if app.designer.active {
-        app.designer.render(f, f.size());
+        app.designer.render(f, f.area());
         return;
     }
     if app.show_lexicon {
-        render_lexicon(f, app, f.size());
+        render_lexicon(f, app, f.area());
         return;
     }
 
     let chunks = Layout::default()
         .direction(Direction::Vertical)
         .constraints([Constraint::Percentage(70), Constraint::Percentage(30)])
-        .split(f.size());
+        .split(f.area());
     app.config.render(f, chunks[0]);
 
     let mut text = app.summary.clone();
@@ -41,7 +41,7 @@ pub fn render(f: &mut Frame, app: &App) {
     );
 
     if app.show_help {
-        let area = centered_rect(60, 70, f.size());
+        let area = centered_rect(60, 70, f.area());
         app.help.render(f, area);
     }
 }

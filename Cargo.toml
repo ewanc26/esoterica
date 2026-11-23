@@ -4,6 +4,7 @@
 
 [package]
 name = "esoterica"
+authors = ["Ewan Croft (ewanc26)"]
 version = "0.1.0"
 edition = "2021"
 

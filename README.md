@@ -185,3 +185,5 @@ If you find this project useful, consider supporting its development:
 ## Licence
 
 MIT
+
+Copyright (C) 2026 Ewan Croft (ewanc26).

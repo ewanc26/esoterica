@@ -177,7 +177,7 @@ impl ConfigComponent {
         f.render_stateful_widget(list, area, &mut state);
         let scrollbar = Scrollbar::default().orientation(ScrollbarOrientation::VerticalRight);
         let mut scrollbar_state = ScrollbarState::new(items.len()).position(state.selected().unwrap_or(0));
-        f.render_stateful_widget(scrollbar, area.inner(&ratatui::layout::Margin { vertical: 1, horizontal: 0 }), &mut scrollbar_state);
+        f.render_stateful_widget(scrollbar, area.inner(ratatui::layout::Margin { vertical: 1, horizontal: 0 }), &mut scrollbar_state);
     }
 }
 
